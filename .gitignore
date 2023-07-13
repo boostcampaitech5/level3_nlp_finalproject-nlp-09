@@ -236,3 +236,5 @@ sketch
 # End of https://www.toptal.com/developers/gitignore/api/python,linux,visualstudiocode,jupyternotebooks,react
 
 backend/migrations/
+backend/project.db
+backend/alembic.ini
