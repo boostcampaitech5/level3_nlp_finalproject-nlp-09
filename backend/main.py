@@ -2,23 +2,24 @@ import uvicorn
 import tempfile
 import shutil
 import os, sys
-sys.path.append('../')
+sys.path.append('./')
 from typing import Union
+import asyncio
 
 from fastapi import FastAPI, Form, File, Request, UploadFile
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 
 from pydantic import BaseModel
 
 # database
-from database import SessionLocal
+from database import SessionLocal, Base, engine
 from models import User, History
 from crud import *
 
 # stt
-from stt import transcribe
+from stt import transcribe, transcribe_test, summary_test, qa_test
 
 app = FastAPI()
 templates = Jinja2Templates(directory="../src")
@@ -37,6 +38,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def read_root():
@@ -66,7 +68,7 @@ def get_signup_form(request: Request):
 
 
 @app.post("/signup")
-def login(username: str = Form(...), password: str = Form(...)):
+def signup(username: str = Form(...), password: str = Form(...)):
     db = SessionLocal()
     user_info = schemas.User(user_id=username, password=password)
     new_user = create_user(db, user_info)
@@ -90,25 +92,28 @@ def create_history(user_id):
     return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
 
 
-@app.get("/transcribe_ready")
-def home(request: Request):
-    return templates.TemplateResponse("transcribe_ready.html", context={"request": request})
-
-
-@app.post("/transcribe")
-async def return_transcript(request: Request, audio: UploadFile = File(...)):
+@app.post("/transformed")
+async def return_result(request: Request, audio: UploadFile = File(...)):
     audio_format = '.'+ audio.filename.split('.')[-1]
     temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
     with open(temp_audio.name, "wb") as buffer:
         shutil.copyfileobj(audio.file, buffer)
 
-    transcript = transcribe(temp_audio.name)
+    # transcription = transcribe(temp_audio.name)
+    transcription = transcribe_test(temp_audio.name)
+    
+    summary = summary_test(transcription)
+    question, answer = qa_test(summary)
+    
     temp_audio.close()
     os.remove(temp_audio.name)
 
-    return templates.TemplateResponse("transcribe.html", context={
+    return templates.TemplateResponse("transformed.html", context={
         "request": request,
-        "transcript": transcript
+        "transcription": transcription,
+        "summary": summary,
+        "question": question,
+        "answer": answer
         }
     )
 

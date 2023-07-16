@@ -4,17 +4,16 @@
   <style>
     .container {
       display: flex;
-      flex-direction: column;
+      flex-direction: column; /* 세로 방향으로 요소를 배치 */
     }
     
     .header {
-      text-align: center;
+      text-align: center; /* 텍스트를 가운데 정렬 */
       padding: 10px;
     }
     
     .content {
       display: flex;
-      flex: 1;
     }
     
     .column {
@@ -28,7 +27,11 @@
     }
     
     .column-2 {
-      flex: 9;
+      flex: 4;
+    }
+    
+    .column-3 {
+      flex: 4;
     }
   </style>
 </head>
@@ -48,11 +51,16 @@
         {% endfor %}
       </div>
       <div class="column column-2">
-        <h1>Upload your audio file.</h1>
-        <form method="post" action="/transformed" enctype="multipart/form-data">
-            <input type="file" name="audio" value="{{ audio }}">
-            <input type="submit" value="Transform">
-        </form>
+        <h2>Transcript</h2>
+        <p>{{ transcription }}</p>
+      </div>
+      <div class="column column-3">
+        <h2>Summary</h2>
+        <p>{{ summary }}</p>
+        
+        <h2>Question & Answer</h2>
+        <p>{{ question }}</p>
+        <p>{{ answer }}</p>
       </div>
     </div>
   </div>

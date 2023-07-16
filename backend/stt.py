@@ -4,6 +4,7 @@ import openai, whisper
 from pydub import AudioSegment
 import speech_recognition as sr
 from threading import Thread
+import time
 from pprint import pprint
 
 
@@ -83,6 +84,7 @@ def whisper_transcribe_api(audio_segment, print_result=False):
     recognizer = sr.Recognizer()
     audio_data = sr.AudioData(audio_segment.raw_data, audio_segment.frame_rate, audio_segment.sample_width)
     stt_result = recognizer.recognize_whisper_api(audio_data, api_key=OPENAI_API_KEY)
+
     if print_result: print(stt_result)
     
     return stt_result
@@ -103,6 +105,22 @@ def transcribe(audio_path):
     whisper_version = "HOSTED_LARGE"
     transcription = whisper_transcribe(audio_path, whisper_version, wav_path=None)
     return transcription
+
+def transcribe_test(audio_path):
+    time.sleep(5)
+    transcription = "Sample Transcript"
+    return transcription
+
+def summary_test(transcription):
+    time.sleep(5)
+    summary = "Sample Summary"
+    return summary
+
+def qa_test(summary):
+    time.sleep(5)
+    question = "Sample Question?"
+    answer = "Sample Answer"
+    return question, answer
 
 def main():
     audio_path = "~/final/stt/data/wav_test/sample/stt_audio_law1.wav"
