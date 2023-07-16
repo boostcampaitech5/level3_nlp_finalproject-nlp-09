@@ -1,7 +1,11 @@
 import uvicorn
+import tempfile
+import shutil
+import os, sys
+sys.path.append('../')
 from typing import Union
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, File, Request, UploadFile
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -12,6 +16,9 @@ from pydantic import BaseModel
 from database import SessionLocal
 from models import User, History
 from crud import *
+
+# stt
+from stt import transcribe
 
 app = FastAPI()
 templates = Jinja2Templates(directory="../src")
@@ -81,6 +88,29 @@ def create_history(user_id):
         title="test", transcription="test", summary="test", question_answer="test")
     new_history = create_user_history(db, temp_history, user_id)
     return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
+
+
+@app.get("/transcribe_ready")
+def home(request: Request):
+    return templates.TemplateResponse("transcribe_ready.html", context={"request": request})
+
+
+@app.post("/transcribe")
+async def return_transcript(request: Request, audio: UploadFile = File(...)):
+    audio_format = '.'+ audio.filename.split('.')[-1]
+    temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
+    with open(temp_audio.name, "wb") as buffer:
+        shutil.copyfileobj(audio.file, buffer)
+
+    transcript = transcribe(temp_audio.name)
+    temp_audio.close()
+    os.remove(temp_audio.name)
+
+    return templates.TemplateResponse("transcribe.html", context={
+        "request": request,
+        "transcript": transcript
+        }
+    )
 
 
 if __name__ == "__main__":

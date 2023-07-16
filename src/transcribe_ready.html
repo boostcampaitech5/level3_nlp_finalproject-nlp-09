@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>음성 파일 전사</title>
+</head>
+<body>
+    <h1>음성 파일 업로드</h1>
+    <form method="post" action="/transcribe" enctype="multipart/form-data">
+        <input type="file" name="audio" value="{{ audio }}">
+        <input type="submit" value="전사 시작">
+    </form>
+</body>
+</html>
