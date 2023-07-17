@@ -2,7 +2,6 @@ import uvicorn
 import tempfile
 import shutil
 import os, sys
-sys.path.append('./')
 from typing import Union
 import asyncio
 
@@ -13,9 +12,6 @@ from fastapi.responses import RedirectResponse
 
 from pydantic import BaseModel
 
-import asyncio
-import time
-
 # database
 from database import SessionLocal
 from models import User, History, QnA
@@ -23,8 +19,12 @@ from crud import *
 from dependency import *
 from sqlalchemy.orm import Session
 
-# stt
-from stt import transcribe, transcribe_test, summary_test, qa_test
+# audio_processing
+sys.path.append('./')
+sys.path.append('./ml_functions')
+from ml_functions.stt import transcribe, transcribe_test
+from ml_functions.summary import summarize, summarize_test
+from ml_functions.qna import questionize, questionize_test
 
 app = FastAPI()
 templates = Jinja2Templates(directory="../src")
@@ -94,16 +94,51 @@ def get_histories(request: Request, user_id: str, db: Session = Depends(get_db))
     return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history})
 
 
+# @app.post("/home/{user_id}")
+# def create_history(user_id: str, db: Session = Depends(get_db)):
+#     temp_history = schemas.History(
+#         title="test", transcription="test", summary="test", qnas=[])
+#     new_history = create_user_history(db, temp_history, user_id)
+
+#     for i in range(3):
+#         temp_qna = schemas.QnA(question=f"test{i}",
+#                                answer=f"test{i}", history_id=new_history.history_id)
+#         new_answer = create_qna(db, temp_qna)
+#     return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
+
+
 @app.post("/home/{user_id}")
-def create_history(user_id: str, db: Session = Depends(get_db)):
+async def create_history(user_id: str, audio: UploadFile = File(...), db: Session = Depends(get_db)):
+    audio_format = '.' + audio.filename.split('.')[-1]
+    audio_name = audio.filename[:-len(audio_format)]
+    temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
+    with open(temp_audio.name, "wb") as buffer:
+        shutil.copyfileobj(audio.file, buffer)
+
+    # True STT
+    transcription = await asyncio.create_task(transcribe(temp_audio.name))
+    summary = await asyncio.create_task(summarize(transcription))
+    questions, answers = await asyncio.create_task(questionize(summary))
+
+    # # Just for test
+    # transcription = await asyncio.create_task(transcribe_test(temp_audio.name))
+    # summary = await asyncio.create_task(summarize_test(transcription))
+    # questions, answers = await asyncio.create_task(questionize_test(summary))
+
     temp_history = schemas.History(
-        title="test", transcription="test", summary="test", qnas=[])
+        title=audio_name, transcription=transcription, summary=summary
+    )
     new_history = create_user_history(db, temp_history, user_id)
 
-    for i in range(3):
-        temp_qna = schemas.QnA(question=f"test{i}",
-                               answer=f"test{i}", history_id=new_history.history_id)
-        new_answer = create_qna(db, temp_qna)
+    for question, answer in zip(questions, answers):
+        temp_qna = schemas.QnA(
+            question=question, answer=answer, history_id=new_history.history_id
+        )
+        create_qna(db, temp_qna)
+
+    temp_audio.close()
+    os.remove(temp_audio.name)
+
     return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
 
 

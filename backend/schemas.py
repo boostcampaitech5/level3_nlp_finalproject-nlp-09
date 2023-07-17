@@ -3,18 +3,19 @@ from typing import List, Union
 from pydantic import BaseModel
 
 
-class History(BaseModel):
-    title: str
-    transcription: str
-    summary: str
+class QnA(BaseModel):
+    question: str
+    answer: str
+    history_id: int
 
     class Config:
         orm_mode = True
 
 
-class QnA(BaseModel):
-    question: str
-    answer: str
+class History(BaseModel):
+    title: str
+    transcription: str
+    summary: str
 
     class Config:
         orm_mode = True

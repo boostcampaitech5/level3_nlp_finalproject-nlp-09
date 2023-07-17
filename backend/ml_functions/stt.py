@@ -4,7 +4,7 @@ import openai, whisper
 from pydub import AudioSegment
 import speech_recognition as sr
 from threading import Thread
-import time
+import asyncio
 from pprint import pprint
 
 
@@ -94,7 +94,7 @@ def multi_worker(chunk, idx, results_list):
     if result:
         results_list.append((idx, result))
 
-def transcribe(audio_path):
+async def transcribe(audio_path):
     """
     STT Models (whisper_version)
     - HOSTED_SMALL: OpenAI Whisper hosted small (price=free, no_limit)
@@ -103,24 +103,13 @@ def transcribe(audio_path):
     - API: OpenAI Whisper API (price=0.006$/min, limit=25MB, same model as HOSTED LARGE)
     """
     whisper_version = "HOSTED_LARGE"
-    transcription = whisper_transcribe(audio_path, whisper_version, wav_path=None)
+    transcription = await asyncio.create_task(whisper_transcribe(audio_path, whisper_version, wav_path=None))
     return transcription
 
-def transcribe_test(audio_path):
-    time.sleep(5)
+async def transcribe_test(audio_path):
+    await asyncio.sleep(5)
     transcription = "Sample Transcript"
     return transcription
-
-def summary_test(transcription):
-    time.sleep(5)
-    summary = "Sample Summary"
-    return summary
-
-def qa_test(summary):
-    time.sleep(5)
-    question = ["Sample Question 1", "Sample Question 2", "Sample Question 3"]
-    answer = ["Sample Answer 1", "Sample Answer 2", "Sample Answer 3"]
-    return question, answer
 
 def main():
     audio_path = "~/final/stt/data/wav_test/sample/stt_audio_law1.wav"
