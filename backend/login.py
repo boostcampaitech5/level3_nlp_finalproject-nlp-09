@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import uvicorn
 from database import SessionLocal
 from crud import *
-
+from dependency import *
 
 app = FastAPI()
 
@@ -95,29 +95,98 @@ def signup(username: str = Form(...), password: str = Form(...)):
     return {"user_id": username, "user_list": get_users(db)}
 
 
-@app.get("/home")
-async def get_histories(request: Request):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    
-    db = SessionLocal()
-    histories = get_user_histories(db, user['username'])
-
-    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
-
-
-# @app.post("/home")
-# async def create_history(request: Request):
+# @app.get("/home")
+# async def get_histories(request: Request):
 #     user = await get_current_user(request)
 #     if user is None:
 #         return {'message': 'login failed', 'user':user}
     
 #     db = SessionLocal()
-#     temp_history = schemas.History(
-#         title="test", transcription="test", summary="test", question_answer="test")
-#     new_history = create_user_history(db, temp_history, user['username'])
-#     return {"user_id": user['username'], "history_list": get_user_histories(db, user['username'])}
+#     histories = get_user_histories(db, user['username'])
+
+#     return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
+
+@app.get("/home/{user_id}")
+def get_histories(request: Request, user_id: str, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    history = None
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history})
+
+
+@app.post("/home/{user_id}")
+def create_history(user_id: str, db: Session = Depends(get_db)):
+    temp_history = schemas.History(
+        title="test", transcription="test", summary="test", qnas=[])
+    new_history = create_user_history(db, temp_history, user_id)
+
+    for i in range(3):
+        temp_qna = schemas.QnA(question=f"test{i}",
+                               answer=f"test{i}", history_id=new_history.history_id)
+        new_answer = create_qna(db, temp_qna)
+    return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
+
+
+@app.get("/home/{user_id}/{history_id}")
+def get_history(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    history = get_history_by_id(db, history_id)
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history})
+
+
+@app.post("/home/{user_id}/{history_id}")
+def delete_history(user_id: str, history_id: int, db: Session = Depends(get_db)):
+    delete_user_history(db, user_id, history_id)
+    return RedirectResponse(url=f"/home/{user_id}", status_code=303)
+
+
+@app.post("/home/{user_id}/{history_id}/title")
+def change_title(user_id: str, history_id: int, title: str, db: Session = Depends(get_db)):
+    history = get_history_by_id(db, history_id)
+    change_history_title(db, history, title)
+    return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
+
+
+@app.post("/home/{user_id}/{history_id}/transcription")
+def change_transcription(user_id: str, history_id: int, transcription: str, db: Session = Depends(get_db)):
+    history = get_history_by_id(db, history_id)
+    change_history_transcription(db, history, transcription)
+    return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
+
+
+@app.post("/home/{user_id}/{history_id}/summary")
+def change_summary(user_id: str, history_id: int, summary: str, db: Session = Depends(get_db)):
+    history = get_history_by_id(db, history_id)
+    change_history_summary(db, history, summary)
+    return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
+
+
+@app.get("/home/{user_id}/{history_id}/qna")
+def get_single_qna_page(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    qnas = get_history_qnas(db, history_id)
+    return templates.TemplateResponse("qna.html", context={"request": request, "histories": histories, "qnas": qnas})
+
+
+@app.post("/home/{user_id}/{history_id}/{qna_id}/{type}")
+def change_or_delete(user_id: str, history_id: int, qna_id: int, type: str, question: str = Form(None), answer: str = Form(None),  db: Session = Depends(get_db)):
+    if type == "change":
+        change_qna(user_id, history_id, qna_id, question, answer, db)
+    elif type == "delete":
+        delete_qna(user_id, history_id, qna_id, db)
+
+
+def change_qna(user_id: str, history_id: int, qna_id: int, question: str, answer: str, db: Session):
+    qna = get_qna_by_id(db, qna_id)
+    changed_qna = change_history_qna(db, qna, question, answer)
+    return {"user_id": user_id, "history_id": history_id, "qna_id": qna_id, "changed_qna": changed_qna}
+
+
+def delete_qna(user_id: str, history_id: int, qna_id: int, db: Session):
+    qna = get_qna_by_id(db, qna_id)
+    delete_history_qna(db, qna)
+    return {"user_id": user_id, "history_id": history_id, "qna_id": qna_id}
+
+
 
 
 if __name__ == '__main__':
