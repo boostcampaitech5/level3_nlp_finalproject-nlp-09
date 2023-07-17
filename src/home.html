@@ -32,58 +32,31 @@
     }
   </style>
 </head>
-<!-- <body>
-  <div class="container">
-    <div class="header">
-      <h1>HOME: {{ user_id }}</h1>
-    </div>
-    <div class="content">
-      <div class="column column-1">
-        <h2>Histories</h2>
-        {% for history in histories %}
-        <p>title: {{ history.title }}</p>
-        <p>transcription: {{ history.transcription }}</p>
-        <p>summary: {{ history.summary }}</p>
-        <p>qa: {{ history.question_answer }}</p>
-        {% endfor %}
-      </div>
-      <div class="column column-2">
-        <h1>Upload your audio file.</h1>
-        <form method="post" action="/home" enctype="multipart/form-data">
-            <input type="file" name="audio" value="{{ audio }}">
-            <input type="submit" value="Transform">
-        </form>
-      </div>
-    </div>
-  </div>
-</body> -->
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>HOME: {{ user_id }}</h1>
-    </div>
-    <div class="content">
-      <div class="column column-1">
-        <h2>Histories</h2>
-        {% for history in histories %}
-          <h3>History {{ history.history_id }}</h3>
-          <p>Title: {{ history.title }}</p>
-          <p>Transcription: {{ history.transcription }}</p>
-          <p>Summary: {{ history.summary }}</p>
-          {% for qna in qnas %}
-              {% if qna.history_id == history.history_id %}
-                  <p>Question: {{ qna.question }}</p>
-                  <p>Answer: {{ qna.answer }}</p>
-              {% endif %}
-          {% endfor %}
-        {% endfor %}
+  </div>
+    <h1>home</h1>
+    <div>
+      <div style="float: left; width: 30%; height: 500px; overflow: scroll; background-color: antiquewhite;">
+        <h3>histories</h3>
+        <div>
+            {% for history in histories %}
+            <div style="background-color: rgb(247, 238, 226);">
+                <p>title: {{ history.title }}</p>
+                <p>transcription: {{ history.transcription }}</p>
+                <p>summary: {{ history.summary }}</p>
+                <p>qa: {{ history.question_answer }}</p>
+            </div>
+            <br>
+            {% endfor %}
+          </div>
       </div>
-      <div class="column column-2">
-        <h1>Upload your audio file.</h1>
-        <form method="post" action="/transformed" enctype="multipart/form-data">
-            <input type="file" name="audio" value="{{ audio }}">
-            <input type="submit" value="Transform">
-        </form>
+    </div>
+    <div style="float: left; width: 70%; height: 500px; background-color: rgb(241, 249, 249);">
+      <h3>main</h3>
+      <div>
+          <p>title: {{ history.title }}</p>
+          <p>transcription: {{ history.transcription }}</p>
+          <p>summary: {{ history.summary }}</p>
       </div>
     </div>
   </div>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>home</h1>
+    <div>
+        <div style="float: left; width: 30%; height: 500px; overflow: scroll; background-color: antiquewhite;">
+            <h3>histories</h3>
+            <div>
+                {% for history in histories %}
+                <div style="background-color: rgb(247, 238, 226);">
+                    <p>title: {{ history.title }}</p>
+                    <p>transcription: {{ history.transcription }}</p>
+                    <p>summary: {{ history.summary }}</p>
+                    <p>qa: {{ history.question_answer }}</p>
+                </div>
+                <br>
+                {% endfor %}
+            </div>
+        </div>
+        <div style="float: left; width: 70%; height: 500px; background-color: rgb(241, 249, 249);">
+            <h3>main</h3>
+            <div>
+                {% for qna in qnas %}
+                <div>
+                    <p>Q: {{ qna.question }}</p>
+                    <p>A: {{ qna.answer }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

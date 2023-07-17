@@ -13,10 +13,15 @@ from fastapi.responses import RedirectResponse
 
 from pydantic import BaseModel
 
+import asyncio
+import time
+
 # database
-from database import SessionLocal, Base, engine
+from database import SessionLocal
 from models import User, History, QnA
 from crud import *
+from dependency import *
+from sqlalchemy.orm import Session
 
 # stt
 from stt import transcribe, transcribe_test, summary_test, qa_test
@@ -38,8 +43,16 @@ app.add_middleware(
 )
 
 @app.get("/")
-def read_root():
-    return {"Hello": "World"}
+def get_root(request: Request):
+    return templates.TemplateResponse("index.html", context={"request": request})
+
+
+@app.post("/")
+def login_or_signup(request: Request, login_or_signup: str = Form(...)):
+    if login_or_signup == "login":
+        return RedirectResponse(url="/login", status_code=303)
+    elif login_or_signup == "signup":
+        return RedirectResponse(url="/signup", status_code=303)
 
 
 @app.get("/login")
@@ -48,107 +61,111 @@ def get_login_form(request: Request):
 
 
 @app.post("/login")
-def login(username: str = Form(...), password: str = Form(...)):
-    db = SessionLocal()
+def login(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     user = get_user(db, username)
     if user is None:
         return "please sign up"
     elif user.password != password:
         return "check your password"
     else:
-        return RedirectResponse(url=f"/home?user_id={username}", status_code=303)
+        return RedirectResponse(url=f"/home/{username}", status_code=303)
 
 
 @app.get("/signup")
 def get_signup_form(request: Request):
-    return templates.TemplateResponse("login.html", context={"request": request})
+    return templates.TemplateResponse("signup.html", context={"request": request})
 
 
 @app.post("/signup")
-def signup(username: str = Form(...), password: str = Form(...)):
-    db = SessionLocal()
-    user_info = schemas.User(user_id=username, password=password)
-    create_user(db, user_info)
-    return {"user_id": username, "user_list": get_users(db)}
+def signup(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    check_user = get_user(db, username)
+    if check_user is not None:
+        return "already exist"
+    else:
+        user_info = schemas.User(user_id=username, password=password)
+        new_user = create_user(db, user_info)
+        return RedirectResponse(url=f"/home/{username}", status_code=303)
 
 
-@app.get("/home")
-def get_histories(request: Request, user_id):
-    db = SessionLocal()
+@app.get("/home/{user_id}")
+def get_histories(request: Request, user_id: str, db: Session = Depends(get_db)):
     histories = get_user_histories(db, user_id)
-    qnas = get_user_all_qnas(db, user_id)
-
-    return templates.TemplateResponse("home.html", context={
-        "request": request, 
-        "user_id": user_id, 
-        "histories": histories, 
-        "qnas": qnas
-        }
-    )
+    history = None
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history})
 
 
-# @app.post("/home")
-# def create_history(user_id):
-#     db = SessionLocal()
-#     temp_history = schemas.History(
-#         title="sample_title", transcription="sample_transcription", summary="sample_summary", user_id=user_id
-#     )
-#     new_history = create_user_history(db, temp_history, user_id)
-#     histories = get_user_histories(db, user_id)
-
-#     for i in range(3):
-#         temp_qna = schemas.QnA(
-#             question=f"sample_question_{i}", answer=f"sample_answer_{i}", history_id=new_history.history_id
-#         )
-#         create_user_history_qna(db, temp_qna, new_history.history_id)
-#     qnas = get_user_all_qnas(db, user_id)
-
-#     return {"user_id": user_id, "histories": histories, "qnas": qnas}
-
-
-@app.post("/transformed")
-async def return_result(request: Request, user_id: str, audio: UploadFile = File(...)):
-    audio_format = '.'+ audio.filename.split('.')[-1]
-    audio_name = audio.filename[:-len(audio_format)]
-    temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
-    with open(temp_audio.name, "wb") as buffer:
-        shutil.copyfileobj(audio.file, buffer)
-
-    # transcription = transcribe(temp_audio.name)
-    transcription = transcribe_test(temp_audio.name)
-    summary = summary_test(transcription)
-    questions, answers = qa_test(summary)
-    
-    temp_audio.close()
-    os.remove(temp_audio.name)
-
-    db = SessionLocal()
+@app.post("/home/{user_id}")
+def create_history(user_id: str, db: Session = Depends(get_db)):
     temp_history = schemas.History(
-        title=audio_name,
-        transcription=transcription,
-        summary=summary
-    )
+        title="test", transcription="test", summary="test", qnas=[])
     new_history = create_user_history(db, temp_history, user_id)
-    
-    for question, answer in zip(questions, answers):
-        temp_qna = schemas.QnA(
-            question=question,
-            answer=answer
-        )
-        create_user_history_qna(db, temp_qna, new_history.history_id, user_id)
 
+    for i in range(3):
+        temp_qna = schemas.QnA(question=f"test{i}",
+                               answer=f"test{i}", history_id=new_history.history_id)
+        new_answer = create_qna(db, temp_qna)
+    return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
+
+
+@app.get("/home/{user_id}/{history_id}")
+def get_history(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
     histories = get_user_histories(db, user_id)
-    qnas = get_user_all_qnas(db, user_id)
+    history = get_history_by_id(db, history_id)
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history})
 
-    return templates.TemplateResponse("transformed.html", context={
-        "request": request,
-        "histories": histories,
-        "transcription": transcription,
-        "summary": summary,
-        "qnas": qnas,
-        "user_id": user_id
-        }
-    )
+
+@app.post("/home/{user_id}/{history_id}")
+def delete_history(user_id: str, history_id: int, db: Session = Depends(get_db)):
+    delete_user_history(db, user_id, history_id)
+    return RedirectResponse(url=f"/home/{user_id}", status_code=303)
+
+
+@app.post("/home/{user_id}/{history_id}/title")
+def change_title(user_id: str, history_id: int, title: str, db: Session = Depends(get_db)):
+    history = get_history_by_id(db, history_id)
+    change_history_title(db, history, title)
+    return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
+
+
+@app.post("/home/{user_id}/{history_id}/transcription")
+def change_transcription(user_id: str, history_id: int, transcription: str, db: Session = Depends(get_db)):
+    history = get_history_by_id(db, history_id)
+    change_history_transcription(db, history, transcription)
+    return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
+
+
+@app.post("/home/{user_id}/{history_id}/summary")
+def change_summary(user_id: str, history_id: int, summary: str, db: Session = Depends(get_db)):
+    history = get_history_by_id(db, history_id)
+    change_history_summary(db, history, summary)
+    return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
+
+
+@app.get("/home/{user_id}/{history_id}/qna")
+def get_single_qna_page(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    qnas = get_history_qnas(db, history_id)
+    return templates.TemplateResponse("qna.html", context={"request": request, "histories": histories, "qnas": qnas})
+
+
+@app.post("/home/{user_id}/{history_id}/{qna_id}/{type}")
+def change_or_delete(user_id: str, history_id: int, qna_id: int, type: str, question: str = Form(None), answer: str = Form(None),  db: Session = Depends(get_db)):
+    if type == "change":
+        change_qna(user_id, history_id, qna_id, question, answer, db)
+    elif type == "delete":
+        delete_qna(user_id, history_id, qna_id, db)
+
+
+def change_qna(user_id: str, history_id: int, qna_id: int, question: str, answer: str, db: Session):
+    qna = get_qna_by_id(db, qna_id)
+    changed_qna = change_history_qna(db, qna, question, answer)
+    return {"user_id": user_id, "history_id": history_id, "qna_id": qna_id, "changed_qna": changed_qna}
+
+
+def delete_qna(user_id: str, history_id: int, qna_id: int, db: Session):
+    qna = get_qna_by_id(db, qna_id)
+    delete_history_qna(db, qna)
+    return {"user_id": user_id, "history_id": history_id, "qna_id": qna_id}
 
 
 if __name__ == "__main__":
