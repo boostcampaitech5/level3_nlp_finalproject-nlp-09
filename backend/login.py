@@ -9,7 +9,7 @@ import uvicorn
 app = FastAPI()
 
 # Jinja2 템플릿 설정
-templates = Jinja2Templates(directory="./")
+templates = Jinja2Templates(directory="../src")
 
 # JWT 설정
 SECRET_KEY = "your-secret-key"  # 실제 사용 시 더 복잡한 값으로 변경해야 합니다.
@@ -79,7 +79,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse("login_test.html", {"request": request})
 
 
 @app.get("/secure-data/")
@@ -99,4 +99,4 @@ async def logout(request: Request):
 
 
 if __name__ == '__main__':
-    uvicorn.run("login_test:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("login:app", host="127.0.0.1", port=8000, reload=True)
