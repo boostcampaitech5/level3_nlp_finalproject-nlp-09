@@ -83,8 +83,27 @@ def generate_qnas_sync(context):
     return questions, answers
 
 
-async def questionize(summary):
-    questions, answers = await asyncio.create_task(generate_qnas_sync(summary))
+def generate_qnas_in_group_sync(summary_list):
+    tokenizer, model, device = set_inference()
+    # 임시 방편으로 짧은 문장 요약본을 10개씩 묶어 하나의 summary로 보고 questions, answers 생성 #
+    summary_group = []
+    for i in range(0, len(summary_list), 10):
+        summary = ''.join(summary_list[i:i+5])
+        summary_group.append(summary)
+    # 만약 summary_list가 짧은 문장들로 구성되지 않은 경우 바로 아래 동작으로 넘어가도 됨
+
+    questions_list, answers_list = [], []
+    for summary in summary_group: # summary_list가 짧은 문장들로 구성되지 않은 경우 summary_group을 summary_list로 변경 가능
+        generated_qnas = generate_n_beams_qnas(summary, tokenizer, model, device, n_beams=10)
+        questions, answers = qna_postprocess(generated_qnas)
+        questions_list.extend(questions)
+        answers_list.extend(answers)
+    
+    return questions, answers
+
+
+def questionize(summary_list):
+    questions, answers = generate_qnas_in_group_sync(summary_list)
     return questions, answers
 
 

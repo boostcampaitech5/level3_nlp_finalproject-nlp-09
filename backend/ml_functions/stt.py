@@ -5,6 +5,7 @@ from pydub import AudioSegment
 import speech_recognition as sr
 from threading import Thread
 import asyncio
+from functools import partial
 from pprint import pprint
 
 
@@ -59,6 +60,30 @@ def whisper_transcribe(audio_path, whisper_version, print_result=False, wav_path
 
         stt_parts = [stt_part for _, stt_part in sorted(stt_parts)]
         stt_result = "\n\n".join(stt_parts)
+    # elif whisper_version == "API":
+    #     # 비동기 작업을 처리하기 위해 asyncio 이벤트 루프 생성
+    #     loop = asyncio.get_event_loop()
+
+    #     # split_audio_by_time 함수의 인자를 부분적으로 채워넣기 위해 partial 함수 사용
+    #     chunk_duration = 3
+    #     partial_fn = partial(split_audio_by_time, audio_segment, chunk_duration)
+
+    #     # split_audio_by_time 함수를 asyncio.run_in_executor를 사용하여 비동기로 실행
+    #     wav_chunks = await loop.run_in_executor(None, partial_fn)
+
+    #     stt_parts, tasks = [], []
+    #     for idx, chunk in enumerate(wav_chunks):
+    #         print(f"Processing chunk {idx+1}...")
+    #         # multi_worker 함수를 asyncio.run_in_executor를 사용하여 비동기로 실행하도록 변경
+    #         task = loop.run_in_executor(None, partial(multi_worker, chunk, idx, stt_parts))
+    #         print("Whisper API is Called")
+    #         tasks.append(task)
+
+    #     # 비동기 작업이 완료될 때까지 대기
+    #     await asyncio.gather(*tasks)
+
+    #     stt_parts = [stt_part for _, stt_part in sorted(stt_parts)]
+    #     stt_result = "\n\n".join(stt_parts)
 
     return stt_result
 
@@ -94,7 +119,7 @@ def multi_worker(chunk, idx, results_list):
     if result:
         results_list.append((idx, result))
 
-async def transcribe(audio_path):
+def transcribe(audio_path):
     """
     STT Models (whisper_version)
     - HOSTED_SMALL: OpenAI Whisper hosted small (price=free, no_limit)
@@ -102,8 +127,8 @@ async def transcribe(audio_path):
     - HOSTED_LARGE: OpenAI Whisper hosted large-v2 (price=free, no_limit)
     - API: OpenAI Whisper API (price=0.006$/min, limit=25MB, same model as HOSTED LARGE)
     """
-    whisper_version = "HOSTED_LARGE"
-    transcription = await asyncio.create_task(whisper_transcribe(audio_path, whisper_version, wav_path=None))
+    whisper_version = "API"
+    transcription = whisper_transcribe(audio_path, whisper_version, wav_path=None)
     return transcription
 
 async def transcribe_test(audio_path):

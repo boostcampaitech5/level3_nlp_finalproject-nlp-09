@@ -63,6 +63,10 @@
                 <p>title: {{ history.title }}</p>
                 <p>transcription: {{ history.transcription }}</p>
                 <p>summary: {{ history.summary }}</p>
+                {% for qna in qnas %}
+                    <p>Question {{ qna_index }}. {{ qna.question }}</p>
+                    <p>Answer {{ qna_index }}. {{ qna.answer }}</p>
+                {% endfor %}
             </div>
         </div>
     </div>

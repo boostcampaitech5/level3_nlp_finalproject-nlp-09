@@ -91,55 +91,73 @@ def signup(username: str = Form(...), password: str = Form(...), db: Session = D
 def get_histories(request: Request, user_id: str, db: Session = Depends(get_db)):
     histories = get_user_histories(db, user_id)
     history = None
-    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history})
-
-
-# @app.post("/home/{user_id}")
-# def create_history(user_id: str, db: Session = Depends(get_db)):
-#     temp_history = schemas.History(
-#         title="test", transcription="test", summary="test", qnas=[])
-#     new_history = create_user_history(db, temp_history, user_id)
-
-#     for i in range(3):
-#         temp_qna = schemas.QnA(question=f"test{i}",
-#                                answer=f"test{i}", history_id=new_history.history_id)
-#         new_answer = create_qna(db, temp_qna)
-#     return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
+    qnas = None
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history, "qnas": qnas})
 
 
 @app.post("/home/{user_id}")
 async def create_history(user_id: str, audio: UploadFile = File(...), db: Session = Depends(get_db)):
+    empty_history = schemas.History(
+        title="empty_title", transcription="empty_transcription", summary="empty_summary"
+    )
+    new_history = create_user_history(db, empty_history, user_id)
+
+    empty_qna = schemas.QnA(
+        question="empty_question", answer="empty_answer", history_id=new_history.history_id
+    )
+    new_qna = create_qna(db, empty_qna)
+    
     audio_format = '.' + audio.filename.split('.')[-1]
     audio_name = audio.filename[:-len(audio_format)]
     temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
     with open(temp_audio.name, "wb") as buffer:
         shutil.copyfileobj(audio.file, buffer)
 
-    # True STT
-    transcription = await asyncio.create_task(transcribe(temp_audio.name))
-    summary = await asyncio.create_task(summarize(transcription))
-    questions, answers = await asyncio.create_task(questionize(summary))
+    title = audio_name
+    new_history = change_history_title(db, new_history, title)
 
-    # # Just for test
-    # transcription = await asyncio.create_task(transcribe_test(temp_audio.name))
-    # summary = await asyncio.create_task(summarize_test(transcription))
-    # questions, answers = await asyncio.create_task(questionize_test(summary))
+    transcription = asyncio.create_task(transcribe(temp_audio.name))
+    new_history = change_history_transcription(db, new_history, transcription)
 
-    temp_history = schemas.History(
-        title=audio_name, transcription=transcription, summary=summary
-    )
-    new_history = create_user_history(db, temp_history, user_id)
+    summary_task = asyncio.create_task(summarize(transcription))
+    summary = await summary_task
+    new_history = change_history_summary(db, new_history, summary)
 
+    qnas_task = asyncio.create_task(questionize(summary))
+    questions, answers = await qnas_task
+    new_qnas = []
     for question, answer in zip(questions, answers):
-        temp_qna = schemas.QnA(
-            question=question, answer=answer, history_id=new_history.history_id
-        )
-        create_qna(db, temp_qna)
+        if new_qna.question == "empty_question":
+            new_qna = change_history_qna(db, new_qna, question, answer)
+        else:
+            temp_qna = schemas.QnA(
+                question=question, answer=answer, history_id=new_history.history_id
+            )
+            new_qna = create_qna(db, temp_qna)
+        new_qnas.append(new_qna)
 
     temp_audio.close()
     os.remove(temp_audio.name)
 
-    return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
+    return {"user_id": user_id, "history_list": get_user_histories(db, user_id), "history": new_history, "qnas": new_qnas}
+
+
+@app.get("/home/{user_id}/transcription")
+async def get_transcription(request: Request, user_id: str, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
+
+
+@app.get("/home/{user_id}/summary")
+async def get_summary(request: Request, user_id: str, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
+
+
+@app.get("/home/{user_id}/qna")
+async def get_qna(request: Request, user_id: str, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
 
 
 @app.get("/home/{user_id}/{history_id}")

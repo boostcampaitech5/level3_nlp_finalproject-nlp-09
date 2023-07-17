@@ -13,10 +13,10 @@ def set_inference():
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
     model.to(device)
-    return model_name
 
 
-def summarize_sync(transcription, model_name):
+def summarize_sync(transcription):
+    model_name = "junsun10/mt5-base-kor-paper-summary"
     data = grouping.split_text_into_sentences(transcription)
     grouped_data = grouping.main(data)
     raw_summary = text_to_sum.inference_group(grouped_data, model_name)
@@ -24,8 +24,8 @@ def summarize_sync(transcription, model_name):
     return summary
 
 
-async def summarize(transcription, model_name):
-    summary = await asyncio.create_task(summarize_sync(transcription, model_name))
+async def summarize(transcription):
+    summary = await asyncio.create_task(summarize_sync(transcription))
     return summary
 
 
