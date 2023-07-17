@@ -27,11 +27,11 @@
     }
     
     .column-2 {
-      flex: 4;
+      flex: 4.5;
     }
     
     .column-3 {
-      flex: 4;
+      flex: 4.5;
     }
   </style>
 </head>
@@ -44,10 +44,16 @@
       <div class="column column-1">
         <h2>Histories</h2>
         {% for history in histories %}
-        <p>title: {{ history.title }}</p>
-        <p>transcription: {{ history.transcription }}</p>
-        <p>summary: {{ history.summary }}</p>
-        <p>qa: {{ history.question_answer }}</p>
+          <h3>History {{ history.history_id }}</h3>
+          <p>Title: {{ history.title }}</p>
+          <p>Transcription: {{ history.transcription }}</p>
+          <p>Summary: {{ history.summary }}</p>
+          {% for qna in qnas %}
+              {% if qna.history_id == history.history_id %}
+                  <p>Question: {{ qna.question }}</p>
+                  <p>Answer: {{ qna.answer }}</p>
+              {% endif %}
+          {% endfor %}
         {% endfor %}
       </div>
       <div class="column column-2">
@@ -59,8 +65,10 @@
         <p>{{ summary }}</p>
         
         <h2>Question & Answer</h2>
-        <p>{{ question }}</p>
-        <p>{{ answer }}</p>
+        {% for qna in qnas %}
+          <p>Question: {{ qna.question }}</p>
+          <p>Answer: {{ qna.answer }}</p>
+        {% endfor %}
       </div>
     </div>
   </div>

@@ -10,3 +10,4 @@ engine = create_engine(
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 Base = declarative_base()
+Base.metadata.create_all(bind=engine)

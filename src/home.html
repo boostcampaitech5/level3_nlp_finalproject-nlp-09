@@ -32,7 +32,7 @@
     }
   </style>
 </head>
-<body>
+<!-- <body>
   <div class="container">
     <div class="header">
       <h1>HOME: {{ user_id }}</h1>
@@ -45,6 +45,37 @@
         <p>transcription: {{ history.transcription }}</p>
         <p>summary: {{ history.summary }}</p>
         <p>qa: {{ history.question_answer }}</p>
+        {% endfor %}
+      </div>
+      <div class="column column-2">
+        <h1>Upload your audio file.</h1>
+        <form method="post" action="/home" enctype="multipart/form-data">
+            <input type="file" name="audio" value="{{ audio }}">
+            <input type="submit" value="Transform">
+        </form>
+      </div>
+    </div>
+  </div>
+</body> -->
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>HOME: {{ user_id }}</h1>
+    </div>
+    <div class="content">
+      <div class="column column-1">
+        <h2>Histories</h2>
+        {% for history in histories %}
+          <h3>History {{ history.history_id }}</h3>
+          <p>Title: {{ history.title }}</p>
+          <p>Transcription: {{ history.transcription }}</p>
+          <p>Summary: {{ history.summary }}</p>
+          {% for qna in qnas %}
+              {% if qna.history_id == history.history_id %}
+                  <p>Question: {{ qna.question }}</p>
+                  <p>Answer: {{ qna.answer }}</p>
+              {% endif %}
+          {% endfor %}
         {% endfor %}
       </div>
       <div class="column column-2">

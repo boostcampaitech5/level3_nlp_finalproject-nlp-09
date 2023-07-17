@@ -118,8 +118,8 @@ def summary_test(transcription):
 
 def qa_test(summary):
     time.sleep(5)
-    question = "Sample Question?"
-    answer = "Sample Answer"
+    question = ["Sample Question 1", "Sample Question 2", "Sample Question 3"]
+    answer = ["Sample Answer 1", "Sample Answer 2", "Sample Answer 3"]
     return question, answer
 
 def main():
