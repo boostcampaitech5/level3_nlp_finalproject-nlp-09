@@ -5,7 +5,7 @@ import schemas
 
 
 # user table
-def get_user(db: Session, user_id: int):
+def get_user(db: Session, user_id: str):
     return db.query(models.User).filter(models.User.user_id == user_id).first()
 
 
@@ -27,7 +27,7 @@ def get_histories(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.History).offset(skip).limit(limit).all()
 
 
-def get_user_histories(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+def get_user_histories(db: Session, user_id: str, skip: int = 0, limit: int = 100):
     return db.query(models.History).filter(models.History.user_id == user_id).offset(skip).limit(limit).all()
 
 
