@@ -27,9 +27,12 @@
         <div style="float: left; width: 70%; height: 500px; background-color: rgb(241, 249, 249);">
             <h3>main</h3>
             <div>
-                <p>title: {{ history.title }}</p>
-                <p>transcription: {{ history.transcription }}</p>
-                <p>summary: {{ history.summary }}</p>
+                {% for qna in qnas %}
+                <div>
+                    <p>Q: {{ qna.question }}</p>
+                    <p>A: {{ qna.answer }}</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
