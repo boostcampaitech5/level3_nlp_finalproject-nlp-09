@@ -5,6 +5,9 @@ from fastapi.templating import Jinja2Templates
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import uvicorn
+from database import SessionLocal
+from crud import *
+
 
 app = FastAPI()
 
@@ -16,17 +19,6 @@ SECRET_KEY = "your-secret-key"  # 실제 사용 시 더 복잡한 값으로 변�
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# 사용자 정보 (실제로는 DB나 외부 저장소에서 가져와야 합니다.)
-fake_users_db = {
-    "test": {
-        "username": "test",
-        "password": "1234"
-    },
-    "test2": {
-        "username": "test2",
-        "password": "12345"
-    }
-}
 
 # OAuth2PasswordBearer 객체를 사용하여 토큰을 가져올 수 있습니다.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -62,12 +54,13 @@ async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)
 
 @app.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = fake_users_db.get(form_data.username)
-    if user is None or user["password"] != form_data.password:
+    db = SessionLocal()
+    user = get_user(db, form_data.username)
+    if user is None or user.password != form_data.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user["username"]}, expires_delta=access_token_expires)
-    response = RedirectResponse(url="/secure-data/", status_code=status.HTTP_303_SEE_OTHER)
+    access_token = create_access_token(data={"sub": user.user_id}, expires_delta=access_token_expires)
+    response = RedirectResponse(url="/home", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(
                         key='access_token',
                         value=access_token,
@@ -82,20 +75,49 @@ async def login_page(request: Request):
     return templates.TemplateResponse("login_test.html", {"request": request})
 
 
-@app.get("/secure-data/")
-async def get_secure_data(request: Request):
+@app.get("/logout")
+async def logout(request: Request):
+    response = templates.TemplateResponse("login_test.html", {"request":request})
+    response.delete_cookie(key="access_token")
+    return response
+
+
+@app.get("/signup")
+def get_signup_form(request: Request):
+    return templates.TemplateResponse("login.html", context={"request": request})
+
+
+@app.post("/signup")
+def signup(username: str = Form(...), password: str = Form(...)):
+    db = SessionLocal()
+    user_info = schemas.User(user_id=username, password=password)
+    new_user = create_user(db, user_info)
+    return {"user_id": username, "user_list": get_users(db)}
+
+
+@app.get("/home")
+async def get_histories(request: Request):
     user = await get_current_user(request)
     if user is None:
         return {'message': 'login failed', 'user':user}
-        
-    return templates.TemplateResponse("secure.html", {"request": request, "user": user['username']})
+    
+    db = SessionLocal()
+    histories = get_user_histories(db, user['username'])
+
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
 
 
-@app.get("/logout")
-async def logout(request: Request):
-    response = templates.TemplateResponse("login.html", {"request":request})
-    response.delete_cookie(key="access_token")
-    return response
+# @app.post("/home")
+# async def create_history(request: Request):
+#     user = await get_current_user(request)
+#     if user is None:
+#         return {'message': 'login failed', 'user':user}
+    
+#     db = SessionLocal()
+#     temp_history = schemas.History(
+#         title="test", transcription="test", summary="test", question_answer="test")
+#     new_history = create_user_history(db, temp_history, user['username'])
+#     return {"user_id": user['username'], "history_list": get_user_histories(db, user['username'])}
 
 
 if __name__ == '__main__':

@@ -21,7 +21,18 @@ class History(Base):
     title = Column(Text, index=True)
     transcription = Column(Text, index=True)
     summary = Column(Text, index=True)
-    question_answer = Column(Text, index=True)
     user_id = Column(String, ForeignKey("users.user_id"))
 
-    # user = relationship("User", back_populates="history")
+    qna = relationship("QnA", cascade="all, delete", backref="history")
+
+
+class QnA(Base):
+    __tablename__ = "qnas"
+
+    qna_id = Column(Integer, primary_key=True, index=True,
+                    nullable=False, autoincrement=True)
+    question = Column(Text, index=True)
+    answer = Column(Text, index=True)
+    history_id = Column(Integer, ForeignKey("histories.history_id"))
+
+    # history = relationship("History", backref="qna")
