@@ -1,5 +1,6 @@
 import torch
 import asyncio
+from tqdm import tqdm
 from transformers import MT5ForConditionalGeneration, MT5Tokenizer
 
 
@@ -45,7 +46,6 @@ def make_nothing():
 def qna_postprocess(generated_qnas, n_qna=3):
     questions, answers = [], []
     for qa in generated_qnas:
-        print(qa)
         try:
             question, answer = qa.split('?')
             question = question.strip() + '?'
@@ -61,7 +61,6 @@ def qna_postprocess(generated_qnas, n_qna=3):
                 answers.append(answer)
 
             if len(answers) == n_qna:
-                print(len(answers))
                 break
 
         except ValueError:
@@ -93,7 +92,7 @@ def generate_qnas_in_group_sync(summary_list):
     # 만약 summary_list가 짧은 문장들로 구성되지 않은 경우 바로 아래 동작으로 넘어가도 됨
 
     questions_list, answers_list = [], []
-    for summary in summary_group: # summary_list가 짧은 문장들로 구성되지 않은 경우 summary_group을 summary_list로 변경 가능
+    for summary in tqdm(summary_group): # summary_list가 짧은 문장들로 구성되지 않은 경우 summary_group을 summary_list로 변경 가능
         generated_qnas = generate_n_beams_qnas(summary, tokenizer, model, device, n_beams=10)
         questions, answers = qna_postprocess(generated_qnas)
         questions_list.extend(questions)
@@ -104,6 +103,11 @@ def generate_qnas_in_group_sync(summary_list):
 
 def questionize(summary_list):
     questions, answers = generate_qnas_in_group_sync(summary_list)
+    return questions, answers
+
+
+async def questionize_async(summary_list):
+    questions, answers = await asyncio.create_task(generate_qnas_in_group_sync(summary_list))
     return questions, answers
 
 

@@ -239,3 +239,4 @@ backend/migrations/
 backend/project.db
 backend/alembic.ini
 backend/migration
+backend/credentials

@@ -1,5 +1,5 @@
 import os
-import time
+from tqdm import tqdm
 import openai, whisper
 from pydub import AudioSegment
 import speech_recognition as sr
@@ -55,7 +55,7 @@ def whisper_transcribe(audio_path, whisper_version, print_result=False, wav_path
             thread.start()
             threads.append(thread)
 
-        for thread in threads:
+        for thread in tqdm(threads):
             thread.join()
 
         stt_parts = [stt_part for _, stt_part in sorted(stt_parts)]
@@ -129,6 +129,18 @@ def transcribe(audio_path):
     """
     whisper_version = "API"
     transcription = whisper_transcribe(audio_path, whisper_version, wav_path=None)
+    return transcription
+
+async def transcribe_async(audio_path):
+    """
+    STT Models (whisper_version)
+    - HOSTED_SMALL: OpenAI Whisper hosted small (price=free, no_limit)
+    - HOSTED_MEDIUM: OpenAI Whisper hosted medium (price=free, no_limit)
+    - HOSTED_LARGE: OpenAI Whisper hosted large-v2 (price=free, no_limit)
+    - API: OpenAI Whisper API (price=0.006$/min, limit=25MB, same model as HOSTED LARGE)
+    """
+    whisper_version = "API"
+    transcription = await asyncio.create_task(whisper_transcribe(audio_path, whisper_version, wav_path=None))
     return transcription
 
 async def transcribe_test(audio_path):

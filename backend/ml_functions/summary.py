@@ -15,7 +15,7 @@ def set_inference():
     model.to(device)
 
 
-def summarize_sync(transcription):
+def summarize(transcription):
     model_name = "junsun10/mt5-base-kor-paper-summary"
     data = grouping.split_text_into_sentences(transcription)
     grouped_data = grouping.main(data)
@@ -24,8 +24,8 @@ def summarize_sync(transcription):
     return summary
 
 
-async def summarize(transcription):
-    summary = await asyncio.create_task(summarize_sync(transcription))
+async def summarize_async(transcription):
+    summary = await asyncio.create_task(summarize(transcription))
     return summary
 
 

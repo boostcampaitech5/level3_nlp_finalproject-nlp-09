@@ -22,9 +22,9 @@ from sqlalchemy.orm import Session
 # audio_processing
 sys.path.append('./')
 sys.path.append('./ml_functions')
-from ml_functions.stt import transcribe, transcribe_test
-from ml_functions.summary import summarize, summarize_test
-from ml_functions.qna import questionize, questionize_test
+from ml_functions.stt import transcribe, transcribe_async, transcribe_test
+from ml_functions.summary import summarize, summarize_async, summarize_test
+from ml_functions.qna import questionize, questionize_async, questionize_test
 
 app = FastAPI()
 templates = Jinja2Templates(directory="../src")
@@ -98,12 +98,12 @@ def get_histories(request: Request, user_id: str, db: Session = Depends(get_db))
 @app.post("/home/{user_id}")
 async def create_history(user_id: str, audio: UploadFile = File(...), db: Session = Depends(get_db)):
     empty_history = schemas.History(
-        title="empty_title", transcription="empty_transcription", summary="empty_summary"
+        title="loading...", transcription="loading...", summary="loading..."
     )
     new_history = create_user_history(db, empty_history, user_id)
 
     empty_qna = schemas.QnA(
-        question="empty_question", answer="empty_answer", history_id=new_history.history_id
+        question="loading...", answer="loading...", history_id=new_history.history_id
     )
     new_qna = create_qna(db, empty_qna)
     
@@ -116,18 +116,20 @@ async def create_history(user_id: str, audio: UploadFile = File(...), db: Sessio
     title = audio_name
     new_history = change_history_title(db, new_history, title)
 
-    transcription = asyncio.create_task(transcribe(temp_audio.name))
+    # transcription = await asyncio.create_task(transcribe_test(temp_audio.name)) # Async
+    transcription = transcribe(temp_audio.name) # Sync
     new_history = change_history_transcription(db, new_history, transcription)
 
-    summary_task = asyncio.create_task(summarize(transcription))
-    summary = await summary_task
+    # summary = await asyncio.create_task(summarize_test(transcription)) # Async
+    summary_list = summarize(transcription) # Sync
+    summary = '\n'.join(summary_list)
     new_history = change_history_summary(db, new_history, summary)
 
-    qnas_task = asyncio.create_task(questionize(summary))
-    questions, answers = await qnas_task
+    # questions, answers = await asyncio.create_task(questionize_test(summary)) # Async
+    questions, answers = questionize(summary_list)
     new_qnas = []
     for question, answer in zip(questions, answers):
-        if new_qna.question == "empty_question":
+        if new_qna.question == "loading...":
             new_qna = change_history_qna(db, new_qna, question, answer)
         else:
             temp_qna = schemas.QnA(
@@ -150,12 +152,6 @@ async def get_transcription(request: Request, user_id: str, db: Session = Depend
 
 @app.get("/home/{user_id}/summary")
 async def get_summary(request: Request, user_id: str, db: Session = Depends(get_db)):
-    histories = get_user_histories(db, user_id)
-    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
-
-
-@app.get("/home/{user_id}/qna")
-async def get_qna(request: Request, user_id: str, db: Session = Depends(get_db)):
     histories = get_user_histories(db, user_id)
     return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
 
