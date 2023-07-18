@@ -45,8 +45,8 @@ async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
-            return None
-        return {"username": username}
+            return False
+        return username
     
     except JWTError:
         print('JWTError')
@@ -95,23 +95,10 @@ def signup(username: str = Form(...), password: str = Form(...)):
     return {"user_id": username, "user_list": get_users(db)}
 
 
-# @app.get("/home")
-# async def get_histories(request: Request):
-    # user = await get_current_user(request)
-    # if user is None:
-    #     return {'message': 'login failed', 'user':user}
-    
-#     db = SessionLocal()
-#     histories = get_user_histories(db, user['username'])
-
-#     return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
-
 @app.get("/home/{user_id}")
 async def get_histories(request: Request, user_id: str, db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     histories = get_user_histories(db, user_id)
     history = None
@@ -119,12 +106,10 @@ async def get_histories(request: Request, user_id: str, db: Session = Depends(ge
 
 
 @app.post("/home/{user_id}")
-async def create_history(request: Request, user_id: str, db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
-    
+async def create_history(request: Request, user_id: str , db: Session = Depends(get_db)):
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
+
     temp_history = schemas.History(
         title="test", transcription="test", summary="test", qnas=[])
     new_history = create_user_history(db, temp_history, user_id)
@@ -138,10 +123,8 @@ async def create_history(request: Request, user_id: str, db: Session = Depends(g
 
 @app.get("/home/{user_id}/{history_id}")
 async def get_history(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     histories = get_user_histories(db, user_id)
     history = get_history_by_id(db, history_id)
@@ -150,10 +133,8 @@ async def get_history(request: Request, user_id: str, history_id: int, db: Sessi
 
 @app.post("/home/{user_id}/{history_id}")
 async def delete_history(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     delete_user_history(db, user_id, history_id)
     return RedirectResponse(url=f"/home/{user_id}", status_code=303)
@@ -161,10 +142,8 @@ async def delete_history(request: Request, user_id: str, history_id: int, db: Se
 
 @app.post("/home/{user_id}/{history_id}/title")
 async def change_title(request: Request, user_id: str, history_id: int, title: str, db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     history = get_history_by_id(db, history_id)
     change_history_title(db, history, title)
@@ -173,10 +152,8 @@ async def change_title(request: Request, user_id: str, history_id: int, title: s
 
 @app.post("/home/{user_id}/{history_id}/transcription")
 async def change_transcription(request: Request, user_id: str, history_id: int, transcription: str, db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     history = get_history_by_id(db, history_id)
     change_history_transcription(db, history, transcription)
@@ -185,10 +162,8 @@ async def change_transcription(request: Request, user_id: str, history_id: int, 
 
 @app.post("/home/{user_id}/{history_id}/summary")
 async def change_summary(request: Request, user_id: str, history_id: int, summary: str, db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     history = get_history_by_id(db, history_id)
     change_history_summary(db, history, summary)
@@ -197,10 +172,8 @@ async def change_summary(request: Request, user_id: str, history_id: int, summar
 
 @app.get("/home/{user_id}/{history_id}/qna")
 async def get_single_qna_page(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     histories = get_user_histories(db, user_id)
     qnas = get_history_qnas(db, history_id)
@@ -209,10 +182,8 @@ async def get_single_qna_page(request: Request, user_id: str, history_id: int, d
 
 @app.post("/home/{user_id}/{history_id}/{qna_id}/{type}")
 async def change_or_delete(request: Request, user_id: str, history_id: int, qna_id: int, type: str, question: str = Form(None), answer: str = Form(None),  db: Session = Depends(get_db)):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     if type == "change":
         change_qna(user_id, history_id, qna_id, question, answer, db)
@@ -221,10 +192,8 @@ async def change_or_delete(request: Request, user_id: str, history_id: int, qna_
 
 
 async def change_qna(request: Request, user_id: str, history_id: int, qna_id: int, question: str, answer: str, db: Session):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     qna = get_qna_by_id(db, qna_id)
     changed_qna = change_history_qna(db, qna, question, answer)
@@ -232,10 +201,8 @@ async def change_qna(request: Request, user_id: str, history_id: int, qna_id: in
 
 
 async def delete_qna(request: Request, user_id: str, history_id: int, qna_id: int, db: Session):
-    user = await get_current_user(request)
-    if user is None:
-        return {'message': 'login failed', 'user':user}
-    user_id = user['username']
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
     
     qna = get_qna_by_id(db, qna_id)
     delete_history_qna(db, qna)
