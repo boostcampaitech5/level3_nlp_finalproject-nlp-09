@@ -10,7 +10,7 @@ function Password() {
 
   const onSubmit = ( event ) => {
     event.preventDefault()
-    const password = event.target[ 0 ].value;
+    const password = event.target[ 2 ].value;
     if ( password === "" ) {
       <div>invalid</div>
     }
