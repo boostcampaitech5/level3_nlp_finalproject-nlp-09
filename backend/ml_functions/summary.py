@@ -20,19 +20,21 @@ def summarize(transcription):
     data = grouping.split_text_into_sentences(transcription)
     grouped_data = grouping.main(data)
     raw_summary = text_to_sum.inference_group(grouped_data, model_name)
-    summary = text_to_sum.post_processing(raw_summary)
-    return summary
+    summary_list = text_to_sum.post_processing(raw_summary)
+    summary = '\n'.join(summary_list)
+    return summary_list, summary
 
 
 async def summarize_async(transcription):
-    summary = await asyncio.create_task(summarize(transcription))
-    return summary
+    summary_list, summary = summarize(transcription)
+    return summary_list, summary
 
 
 async def summarize_test(transcription):
     await asyncio.sleep(5)
-    summary = "Sample Summary"
-    return summary
+    summary_list = ["Sample Summary 1", "Sample Summary 2", "Sample Summary 3"]
+    summary = "Sample Summary 1\nSample Summary2\nSample Summary3"
+    return summary_list, summary
 
 
 def main():
@@ -55,7 +57,7 @@ def main():
         되고 있고 나머지 이쪽에 값들은 저도 요거에 대해서는 사실은 정확히 잘 몰라요. 소베네치 검증을 보통 매개효과를 검증을 할 때 매개효과의 간접효과를 검증을 할 때 사용을 하기 때문에 이 위에 것만 좀 확인을 해주시면 되고 여기에서 또 이렇게 Z값 그리고 P-value 값 확인을 해가지고 요까지 여러분들이 보고를 해주시면 되겠습니다. 요 매개효과 검증을 해서 검증을 할 때 요까지 보고를 해주시면 되겠습니다. 자 그러면은 요것도 그래도 우리가 오늘 시간이 많이 없지만 여러분들 그래도 직접 한번 해보긴 해봐야겠죠. 해봐야 이것도 여러분들이 기억이 좀 남기 때문에 자 그럼 우리도 항상 하던 대로 어떻게 해야 돼? 각자의 좀 모델을 만들어서 각자의 모델을 한번 좀 만들어보고 각자의 이론적인 모델을 만들어보고 이론적인 모델 매개효과 모델에 대해서 검증까지 한번 지금 실시를 해보도록 하겠습니다. 바로 해보도록 할게요. 여러분들 시작하겠습니다. 혹시 뭔가 잘 안되거나 궁금한거 있거나 하나는 그냥 손 들거나 저 불러주셔가지고 질문하시고 아니면 가서 제가"""
     
     model_name = set_inference()
-    summary = summarize_sync(transcription, model_name)
+    summary = summarize(transcription, model_name)
     pprint(summary)
 
 if __name__ == "__main__":

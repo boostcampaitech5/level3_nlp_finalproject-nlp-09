@@ -52,7 +52,7 @@ def main(sentences):
                 stack[-1] += ' ' + current_sentence
                 continue
 
-        if similarity >= 0.4:
+        if similarity >= 0.3:
             stack[-1] += ' ' + current_sentence
         else:
             stack.append(current_sentence)

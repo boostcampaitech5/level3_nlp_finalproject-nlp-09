@@ -42,6 +42,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
 @app.get("/")
 def get_root(request: Request):
     return templates.TemplateResponse("index.html", context={"request": request})
@@ -95,6 +96,64 @@ def get_histories(request: Request, user_id: str, db: Session = Depends(get_db))
     return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history, "qnas": qnas})
 
 
+async def background_process(audio, db, new_history, new_qna):
+    audio_format = '.' + audio.filename.split('.')[-1]
+    audio_name = audio.filename[:-len(audio_format)]
+    temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
+    with open(temp_audio.name, "wb") as buffer:
+        shutil.copyfileobj(audio.file, buffer)
+
+    title = audio_name
+    change_title_task = asyncio.create_task(
+        asyncio.to_thread(change_history_title, db, new_history, title)
+    )
+    new_history = await change_title_task
+
+    transcription_task = asyncio.create_task(transcribe_async(temp_audio.name))
+    transcription = await transcription_task
+    change_transcription_task = asyncio.create_task(
+        asyncio.to_thread(change_history_transcription, db, new_history, transcription)
+    )
+    new_history = await change_transcription_task
+
+    summary_task = asyncio.create_task(summarize_async(transcription))
+    summary_list, summary = await summary_task
+    change_summary_task = asyncio.create_task(
+        asyncio.to_thread(change_history_summary, db, new_history, summary)
+    )
+    new_history = await change_summary_task
+
+    qna_task = asyncio.create_task(questionize_async(summary_list))
+    questions, answers = await qna_task
+    new_qnas = []
+    for question, answer in zip(questions, answers):       
+        if new_qna.question == "loading...":
+            delete_qna_task = asyncio.create_task(
+                asyncio.to_thread(delete_history_qna, db, new_qna)
+            )
+            await delete_qna_task
+            temp_qna = schemas.QnA(
+                question=question, answer=answer, history_id=new_history.history_id
+            )
+            create_qna_task = asyncio.create_task(
+                asyncio.to_thread(create_qna, db, temp_qna)
+            )
+        else:
+            temp_qna = schemas.QnA(
+                question=question, answer=answer, history_id=new_history.history_id
+            )
+            create_qna_task = asyncio.create_task(
+                asyncio.to_thread(create_qna, db, temp_qna)
+            )
+            new_qna = await create_qna_task
+        new_qnas.append(new_qna)
+
+    temp_audio.close()
+    os.remove(temp_audio.name)
+
+    return new_history, new_qnas
+
+
 @app.post("/home/{user_id}")
 async def create_history(user_id: str, audio: UploadFile = File(...), db: Session = Depends(get_db)):
     empty_history = schemas.History(
@@ -106,42 +165,16 @@ async def create_history(user_id: str, audio: UploadFile = File(...), db: Sessio
         question="loading...", answer="loading...", history_id=new_history.history_id
     )
     new_qna = create_qna(db, empty_qna)
-    
-    audio_format = '.' + audio.filename.split('.')[-1]
-    audio_name = audio.filename[:-len(audio_format)]
-    temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
-    with open(temp_audio.name, "wb") as buffer:
-        shutil.copyfileobj(audio.file, buffer)
 
-    title = audio_name
-    new_history = change_history_title(db, new_history, title)
+    new_history_qna_task = background_process(audio, db, new_history, new_qna)
+    new_history, new_qnas = await new_history_qna_task
+    qna_ids = [new_qna.qna_id for new_qna in new_qnas]
 
-    # transcription = await asyncio.create_task(transcribe_test(temp_audio.name)) # Async
-    transcription = transcribe(temp_audio.name) # Sync
-    new_history = change_history_transcription(db, new_history, transcription)
-
-    # summary = await asyncio.create_task(summarize_test(transcription)) # Async
-    summary_list = summarize(transcription) # Sync
-    summary = '\n'.join(summary_list)
-    new_history = change_history_summary(db, new_history, summary)
-
-    # questions, answers = await asyncio.create_task(questionize_test(summary)) # Async
-    questions, answers = questionize(summary_list)
-    new_qnas = []
-    for question, answer in zip(questions, answers):
-        if new_qna.question == "loading...":
-            new_qna = change_history_qna(db, new_qna, question, answer)
-        else:
-            temp_qna = schemas.QnA(
-                question=question, answer=answer, history_id=new_history.history_id
-            )
-            new_qna = create_qna(db, temp_qna)
-        new_qnas.append(new_qna)
-
-    temp_audio.close()
-    os.remove(temp_audio.name)
-
-    return {"user_id": user_id, "history_list": get_user_histories(db, user_id), "history": new_history, "qnas": new_qnas}
+    return {"user_id": user_id, 
+            "history_list": get_user_histories(db, user_id), 
+            "history": get_history_by_id(db, new_history.history_id), 
+            "qnas": [get_qna_by_id(db, qna_id) for qna_id in qna_ids]
+            }
 
 
 @app.get("/home/{user_id}/transcription")
