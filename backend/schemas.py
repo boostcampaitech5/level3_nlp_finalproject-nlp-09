@@ -25,7 +25,6 @@ class User(BaseModel):
     user_id: str
     password: str
     histories: List[History] = []
-    qnas: List[QnA] = []
 
     class Config:
         orm_mode = True
