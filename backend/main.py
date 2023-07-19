@@ -1,6 +1,12 @@
 import uvicorn
+import tempfile
+import shutil
+import os, sys
 from typing import Union
-from fastapi import FastAPI, Depends, HTTPException, Form, Request, Response, status
+import asyncio
+
+from pydantic import BaseModel
+from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -15,6 +21,13 @@ from crud import *
 from dependency import *
 from sqlalchemy.orm import Session
 
+# audio_processing
+sys.path.append('./')
+sys.path.append('./ml_functions')
+from ml_functions.stt import transcribe, transcribe_async, transcribe_test
+from ml_functions.summary import summarize, summarize_async, summarize_test
+from ml_functions.qna import questionize, questionize_async, questionize_test
+
 # login
 from login import get_current_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
@@ -25,7 +38,6 @@ origins = [
     "http://localhost:3000",
     "localhost:3000"
 ]
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -99,23 +111,88 @@ async def get_histories(request: Request, user_id: str, db: Session = Depends(ge
     
     histories = get_user_histories(db, user_id)
     history = None
-    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history})
+    qnas = None
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history, "qnas": qnas})
+
+
+async def background_process(audio, db, new_history, new_qna):
+    audio_format = '.' + audio.filename.split('.')[-1]
+    audio_name = audio.filename[:-len(audio_format)]
+    temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
+    with open(temp_audio.name, "wb") as buffer:
+        shutil.copyfileobj(audio.file, buffer)
+
+    title = audio_name
+    change_title_task = asyncio.create_task(
+        asyncio.to_thread(change_history_title, db, new_history, title)
+    )
+    new_history = await change_title_task
+
+    transcription_task = asyncio.create_task(transcribe_async(temp_audio.name))
+    transcription = await transcription_task
+    change_transcription_task = asyncio.create_task(
+        asyncio.to_thread(change_history_transcription, db, new_history, transcription)
+    )
+    new_history = await change_transcription_task
+
+    summary_task = asyncio.create_task(summarize_async(transcription))
+    summary_list, summary = await summary_task
+    change_summary_task = asyncio.create_task(
+        asyncio.to_thread(change_history_summary, db, new_history, summary)
+    )
+    new_history = await change_summary_task
+
+    qna_task = asyncio.create_task(questionize_async(summary_list, summary))
+    questions, answers = await qna_task
+    for question, answer in zip(questions, answers):       
+        if new_qna.question == "loading...":
+            delete_qna_task = asyncio.create_task(
+                asyncio.to_thread(delete_history_qna, db, new_qna)
+            )
+            await delete_qna_task
+        temp_qna = schemas.QnA(
+            question=question, answer=answer, history_id=new_history.history_id
+        )
+        create_qna_task = asyncio.create_task(
+            asyncio.to_thread(create_qna, db, temp_qna)
+        )
+        new_qna = await create_qna_task
+
+    temp_audio.close()
+    os.remove(temp_audio.name)
 
 
 @app.post("/home/{user_id}")
-async def create_history(request: Request, user_id: str , db: Session = Depends(get_db)):
-    if not await get_current_user(request):
-        return {'message': 'login failed'}
+async def create_history(user_id: str, audio: UploadFile = File(...), db: Session = Depends(get_db)):
+    empty_history = schemas.History(
+        title="loading...", transcription="loading...", summary="loading..."
+    )
+    new_history = create_user_history(db, empty_history, user_id)
 
-    temp_history = schemas.History(
-        title="test", transcription="test", summary="test", qnas=[])
-    new_history = create_user_history(db, temp_history, user_id)
+    empty_qna = schemas.QnA(
+        question="loading...", answer="loading...", history_id=new_history.history_id
+    )
+    new_qna = create_qna(db, empty_qna)
 
-    for i in range(3):
-        temp_qna = schemas.QnA(question=f"test{i}",
-                               answer=f"test{i}", history_id=new_history.history_id)
-        new_answer = create_qna(db, temp_qna)
-    return {"user_id": user_id, "history_list": get_user_histories(db, user_id)}
+    await background_process(audio, db, new_history, new_qna)
+
+    return {"user_id": user_id, 
+            "history_list": get_user_histories(db, user_id), 
+            "history": get_history_by_id(db, new_history.history_id), 
+            "qnas": get_history_qnas(db, new_history.history_id)
+            }
+
+
+@app.get("/home/{user_id}/transcription")
+async def get_transcription(request: Request, user_id: str, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
+
+
+@app.get("/home/{user_id}/summary")
+async def get_summary(request: Request, user_id: str, db: Session = Depends(get_db)):
+    histories = get_user_histories(db, user_id)
+    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
 
 
 @app.get("/home/{user_id}/{history_id}")
@@ -207,4 +284,4 @@ async def delete_qna(request: Request, user_id: str, history_id: int, qna_id: in
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
