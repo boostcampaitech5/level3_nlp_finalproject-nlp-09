@@ -96,6 +96,40 @@ def get_histories(request: Request, user_id: str, db: Session = Depends(get_db))
     return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history, "qnas": qnas})
 
 
+# async def background_process(audio, db, new_history, new_qna):
+#     audio_format = '.' + audio.filename.split('.')[-1]
+#     audio_name = audio.filename[:-len(audio_format)]
+#     temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
+#     with open(temp_audio.name, "wb") as buffer:
+#         shutil.copyfileobj(audio.file, buffer)
+
+#     title = audio_name
+#     change_title_task = asyncio.create_task(change_history_title_async(db, new_history, title))
+#     new_history = await change_title_task
+
+#     transcription_task = asyncio.create_task(transcribe_async(temp_audio.name))
+#     await transcription_task
+#     change_transcription_task = asyncio.create_task(change_history_transcription_async(db, new_history, transcription_task))
+#     new_history = await change_transcription_task
+
+#     summary_task = asyncio.create_task(summarize_async(transcription_task))
+#     await summary_task
+#     change_summary_task = asyncio.create_task(change_history_summary_async(db, new_history, summary_task))
+#     new_history = await change_summary_task
+
+#     qna_task = asyncio.create_task(questionize_async(change_summary_task))
+#     for question, answer in await qna_task:       
+#         if new_qna.question == "loading...":
+#             await asyncio.create_task(delete_history_qna_async(db, new_qna))
+#         temp_qna = schemas.QnA(
+#             question=question, answer=answer, history_id=new_history.history_id
+#         )
+#         await asyncio.create_task(create_qna_async(db, temp_qna))
+
+#     temp_audio.close()
+#     os.remove(temp_audio.name)
+
+
 async def background_process(audio, db, new_history, new_qna):
     audio_format = '.' + audio.filename.split('.')[-1]
     audio_name = audio.filename[:-len(audio_format)]
@@ -123,35 +157,24 @@ async def background_process(audio, db, new_history, new_qna):
     )
     new_history = await change_summary_task
 
-    qna_task = asyncio.create_task(questionize_async(summary_list))
+    qna_task = asyncio.create_task(questionize_async(summary_list, summary))
     questions, answers = await qna_task
-    new_qnas = []
     for question, answer in zip(questions, answers):       
         if new_qna.question == "loading...":
             delete_qna_task = asyncio.create_task(
                 asyncio.to_thread(delete_history_qna, db, new_qna)
             )
             await delete_qna_task
-            temp_qna = schemas.QnA(
-                question=question, answer=answer, history_id=new_history.history_id
-            )
-            create_qna_task = asyncio.create_task(
-                asyncio.to_thread(create_qna, db, temp_qna)
-            )
-        else:
-            temp_qna = schemas.QnA(
-                question=question, answer=answer, history_id=new_history.history_id
-            )
-            create_qna_task = asyncio.create_task(
-                asyncio.to_thread(create_qna, db, temp_qna)
-            )
-            new_qna = await create_qna_task
-        new_qnas.append(new_qna)
+        temp_qna = schemas.QnA(
+            question=question, answer=answer, history_id=new_history.history_id
+        )
+        create_qna_task = asyncio.create_task(
+            asyncio.to_thread(create_qna, db, temp_qna)
+        )
+        new_qna = await create_qna_task
 
     temp_audio.close()
     os.remove(temp_audio.name)
-
-    return new_history, new_qnas
 
 
 @app.post("/home/{user_id}")
@@ -166,14 +189,12 @@ async def create_history(user_id: str, audio: UploadFile = File(...), db: Sessio
     )
     new_qna = create_qna(db, empty_qna)
 
-    new_history_qna_task = background_process(audio, db, new_history, new_qna)
-    new_history, new_qnas = await new_history_qna_task
-    qna_ids = [new_qna.qna_id for new_qna in new_qnas]
+    await background_process(audio, db, new_history, new_qna)
 
     return {"user_id": user_id, 
             "history_list": get_user_histories(db, user_id), 
             "history": get_history_by_id(db, new_history.history_id), 
-            "qnas": [get_qna_by_id(db, qna_id) for qna_id in qna_ids]
+            "qnas": get_history_qnas(db, new_history.history_id)
             }
 
 
