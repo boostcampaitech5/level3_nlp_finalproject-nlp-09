@@ -69,14 +69,9 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         raise HTTPException(status_code=401, detail="Invalid credentials")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user.user_id}, expires_delta=access_token_expires)
-    response = RedirectResponse(url=f"/home/{user.user_id}", status_code=status.HTTP_303_SEE_OTHER)
-    response.set_cookie(
-                        key='access_token',
-                        value=access_token,
-                        httponly=True
-                    )
     
-    return response
+    # user_id = await get_current_user(access_token)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @app.get("/login", response_class=HTMLResponse)
