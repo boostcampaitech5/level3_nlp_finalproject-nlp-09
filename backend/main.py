@@ -58,7 +58,6 @@ class User(BaseModel):
 
 class Body(BaseModel):
     access_token: str
-    file: UploadFile = None
     history_id: int = None
     qna_id: int = None
     title: str = None
@@ -139,14 +138,20 @@ def background_process_task(audio, db, new_history):
 
 # 히스토리 생성
 @app.post("/upload")
-async def create_history(request: Body, db: Session = Depends(get_db)):
+async def create_history(access_token: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
+    info = get_current_user(access_token)
+    if info["message"] != "Valid":
+        return {"type": False, "message": info["message"]}
+
     empty_history = schemas.History(
         title="loading", transcription="loading", summary="loading"
     )
-    new_history = await asyncio.create_task(create_user_history_async(db, empty_history, request.user_id))
 
-    BackgroundTasks.add_task(background_process_task,
-                             request.file, db, new_history)
+    new_history = await asyncio.create_task(create_user_history_async(db, empty_history, info["user_id"]))
+
+    background_tasks = BackgroundTasks()
+    background_tasks.add_task(background_process_task,
+                              file, db, new_history)
 
     return {"type": True, "message": "create success"}
 
