@@ -238,7 +238,6 @@ sketch
 backend/migrations/
 backend/project.db
 backend/alembic.ini
-backend/credentials/
 frontend/node_modules/*
 
 # secret key
