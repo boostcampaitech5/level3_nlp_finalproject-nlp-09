@@ -240,6 +240,7 @@ backend/project.db
 backend/alembic.ini
 backend/credentials/
 frontend/node_modules/*
+frontend/pockage-lock.json
 
 # secret key
 secret.py
