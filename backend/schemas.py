@@ -19,7 +19,7 @@ class History(BaseModel):
 
     class Config:
         orm_mode = True
-
+        
 
 class User(BaseModel):
     user_id: str

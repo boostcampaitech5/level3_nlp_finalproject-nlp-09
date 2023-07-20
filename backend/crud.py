@@ -47,6 +47,14 @@ def create_user_history(db: Session, history: schemas.History, user_id: str):
     return db_item
 
 
+async def create_user_history_async(db: Session, history: schemas.History, user_id: str):
+    db_item = models.History(**history.dict(), user_id=user_id)
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
 def delete_user_history(db: Session, user_id: str, history_id: str):
     db_item = db.query(models.History).filter(
         models.History.user_id == user_id, models.History.history_id == history_id).first()
@@ -62,6 +70,13 @@ def change_history_title(db: Session, history: models.History, title: str):
     return history
 
 
+async def change_history_title_async(db: Session, history: models.History, title: str):
+    history.title = title
+    db.commit()
+    db.refresh(history)
+    return history
+
+
 def change_history_transcription(db: Session, history: models.History, transcription: str):
     history.transcription = transcription
     db.commit()
@@ -69,7 +84,21 @@ def change_history_transcription(db: Session, history: models.History, transcrip
     return history
 
 
+async def change_history_transcription_async(db: Session, history: models.History, transcription: str):
+    history.transcription = transcription
+    db.commit()
+    db.refresh(history)
+    return history
+
+
 def change_history_summary(db: Session, history: models.History, summary: str):
+    history.summary = summary
+    db.commit()
+    db.refresh(history)
+    return history
+
+
+async def change_history_summary_async(db: Session, history: models.History, summary: str):
     history.summary = summary
     db.commit()
     db.refresh(history)
@@ -85,7 +114,31 @@ def create_qna(db: Session, qna: schemas.QnA):
     return db_item
 
 
+async def create_qna_async(db: Session, qna: schemas.QnA):
+    db_item = models.QnA(**qna.dict())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
+async def create_qna_async(db: Session, qna: schemas.QnA):
+    db_item = models.QnA(**qna.dict())
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
+
+
 def get_qnas_by_history_id(db: Session, history_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.QnA).filter(models.QnA.history_id == history_id).offset(skip).limit(limit).all()
+
+
+async def get_history_qnas_async(db: Session, history_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.QnA).filter(models.QnA.history_id == history_id).offset(skip).limit(limit).all()
+
+
+def get_history_qnas(db: Session, history_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.QnA).filter(models.QnA.history_id == history_id).offset(skip).limit(limit).all()
 
 
@@ -102,6 +155,12 @@ def change_history_qna(db: Session, qna: models.QnA, question: str, answer: str)
 
 
 def delete_history_qna(db: Session, qna: models.QnA):
+    db.delete(qna)
+    db.commit()
+    return qna
+
+
+async def delete_history_qna_async(db: Session, qna: models.QnA):
     db.delete(qna)
     db.commit()
     return qna
