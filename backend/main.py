@@ -73,12 +73,12 @@ class Body(BaseModel):
 async def login_for_access_token(posted_user_info: User, db: Session = Depends(get_db)):
     user = get_user(db, posted_user_info.user_id)
     if user is None or user.password != posted_user_info.password:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        return {"type": False, "message": "wrong password", "access_token": ""}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.user_id}, expires_delta=access_token_expires)
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"type": True, "message": "login success", "access_token": access_token}
 
 
 # 로그인 아이디 검증
