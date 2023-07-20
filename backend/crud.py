@@ -122,14 +122,6 @@ async def create_qna_async(db: Session, qna: schemas.QnA):
     return db_item
 
 
-async def create_qna_async(db: Session, qna: schemas.QnA):
-    db_item = models.QnA(**qna.dict())
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item
-
-
 def get_qnas_by_history_id(db: Session, history_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.QnA).filter(models.QnA.history_id == history_id).offset(skip).limit(limit).all()
 
