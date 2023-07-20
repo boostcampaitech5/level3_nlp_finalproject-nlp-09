@@ -7,6 +7,9 @@ from threading import Thread
 import asyncio
 from functools import partial
 from pprint import pprint
+import sys
+sys.path.append('../')
+from secret import OPENAI_API_KEY_OF_SEHYEONG_IF_SOMEONE_USE_THE_KEY_WITHOUT_PERMISSION_IM_GONNA_KILL_THAT_GUY
 
 
 def split_audio_by_time(audio_segment, chunk_duration=3):
@@ -78,13 +81,11 @@ def whisper_transcribe_hosted(audio_path, whisper_version='LARGE', print_result=
     return stt_result
 
 def whisper_transcribe_api(audio_segment, print_result=False):   
-    with open('./credentials/openai/openai_api_key.txt', 'r') as file:
-        OPENAI_API_KEY = file.read().strip()
-    openai.api_key = OPENAI_API_KEY
+    openai.api_key = OPENAI_API_KEY_OF_SEHYEONG_IF_SOMEONE_USE_THE_KEY_WITHOUT_PERMISSION_IM_GONNA_KILL_THAT_GUY
 
     recognizer = sr.Recognizer()
     audio_data = sr.AudioData(audio_segment.raw_data, audio_segment.frame_rate, audio_segment.sample_width)
-    stt_result = recognizer.recognize_whisper_api(audio_data, api_key=OPENAI_API_KEY)
+    stt_result = recognizer.recognize_whisper_api(audio_data, api_key=OPENAI_API_KEY_OF_SEHYEONG_IF_SOMEONE_USE_THE_KEY_WITHOUT_PERMISSION_IM_GONNA_KILL_THAT_GUY)
 
     if print_result: print(stt_result)
     
@@ -125,7 +126,7 @@ async def transcribe_test(audio_path):
     return transcription
 
 def main():
-    audio_path = "~/final/stt/data/wav_test/sample/stt_audio_law1.wav"
+    audio_path = "/opt/ml/final/stt/data/wav_test/sample/test_1m.m4a"
     transcription = transcribe(audio_path)
     pprint(transcription)
 
