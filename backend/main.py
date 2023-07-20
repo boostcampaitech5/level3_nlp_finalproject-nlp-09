@@ -6,9 +6,9 @@ from typing import Union
 import asyncio
 
 from pydantic import BaseModel
-from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request, Response, status
+from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request, Response, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -110,7 +110,7 @@ async def get_histories(request: Request, user_id: str, db: Session = Depends(ge
     return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history, "qnas": qnas})
 
 
-async def background_process(audio, db, new_history, new_qna):
+def background_process_task(audio, db, new_history):
     audio_format = '.' + audio.filename.split('.')[-1]
     audio_name = audio.filename[:-len(audio_format)]
     temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
@@ -118,76 +118,36 @@ async def background_process(audio, db, new_history, new_qna):
         shutil.copyfileobj(audio.file, buffer)
 
     title = audio_name
-    change_title_task = asyncio.create_task(
-        asyncio.to_thread(change_history_title, db, new_history, title)
-    )
-    new_history = await change_title_task
-
-    transcription_task = asyncio.create_task(transcribe_async(temp_audio.name))
-    transcription = await transcription_task
-    change_transcription_task = asyncio.create_task(
-        asyncio.to_thread(change_history_transcription, db, new_history, transcription)
-    )
-    new_history = await change_transcription_task
-
-    summary_task = asyncio.create_task(summarize_async(transcription))
-    summary_list, summary = await summary_task
-    change_summary_task = asyncio.create_task(
-        asyncio.to_thread(change_history_summary, db, new_history, summary)
-    )
-    new_history = await change_summary_task
-
-    qna_task = asyncio.create_task(questionize_async(summary_list, summary))
-    questions, answers = await qna_task
-    for question, answer in zip(questions, answers):       
-        if new_qna.question == "loading...":
-            delete_qna_task = asyncio.create_task(
-                asyncio.to_thread(delete_history_qna, db, new_qna)
-            )
-            await delete_qna_task
+    new_history = asyncio.run(change_history_title_async(db, new_history, title))
+    transcription = asyncio.run(transcribe_async(temp_audio.name))
+    new_history = asyncio.run(change_history_transcription_async(db, new_history, transcription))
+    summary_list, summary = asyncio.run(summarize_async(transcription))
+    new_history = asyncio.run(change_history_summary_async(db, new_history, summary))
+    questions, answers = asyncio.run(questionize_async(summary_list))
+    for question, answer in zip(questions, answers):
         temp_qna = schemas.QnA(
             question=question, answer=answer, history_id=new_history.history_id
         )
-        create_qna_task = asyncio.create_task(
-            asyncio.to_thread(create_qna, db, temp_qna)
-        )
-        new_qna = await create_qna_task
+        asyncio.run(create_qna_async(db, temp_qna))
 
     temp_audio.close()
     os.remove(temp_audio.name)
 
 
 @app.post("/home/{user_id}")
-async def create_history(user_id: str, audio: UploadFile = File(...), db: Session = Depends(get_db)):
+async def create_history(request: Request, user_id: str, background_tasks: BackgroundTasks, audio: UploadFile = File(...), db: Session = Depends(get_db)):
     empty_history = schemas.History(
         title="loading...", transcription="loading...", summary="loading..."
     )
-    new_history = create_user_history(db, empty_history, user_id)
+    new_history = await asyncio.create_task(create_user_history_async(db, empty_history, user_id))
 
-    empty_qna = schemas.QnA(
-        question="loading...", answer="loading...", history_id=new_history.history_id
-    )
-    new_qna = create_qna(db, empty_qna)
+    background_tasks.add_task(background_process_task, audio, db, new_history)
 
-    await background_process(audio, db, new_history, new_qna)
-
-    return {"user_id": user_id, 
-            "history_list": get_user_histories(db, user_id), 
-            "history": get_history_by_id(db, new_history.history_id), 
+    return {"user_id": user_id,
+            "history_list": get_user_histories(db, user_id),
+            "history": get_history_by_id(db, new_history.history_id),
             "qnas": get_history_qnas(db, new_history.history_id)
             }
-
-
-@app.get("/home/{user_id}/transcription")
-async def get_transcription(request: Request, user_id: str, db: Session = Depends(get_db)):
-    histories = get_user_histories(db, user_id)
-    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
-
-
-@app.get("/home/{user_id}/summary")
-async def get_summary(request: Request, user_id: str, db: Session = Depends(get_db)):
-    histories = get_user_histories(db, user_id)
-    return templates.TemplateResponse("home.html", context={"request": request, "histories": histories})
 
 
 @app.get("/home/{user_id}/{history_id}")
@@ -209,6 +169,24 @@ async def delete_history(request: Request, user_id: str, history_id: int, db: Se
     return RedirectResponse(url=f"/home/{user_id}", status_code=303)
 
 
+@app.get("/home/{user_id}/{history_id}/title")
+async def get_title(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
+    
+    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴
+    history = get_history_by_id(db, history_id)
+    if history is None:
+        return JSONResponse(content={"message": "History not found"}, status_code=404)
+
+    # 히스토리에 title 정보가 없으면 아직 작업이 완료되지 않은 상태
+    if not history.title:
+        return JSONResponse(content={"message": "Title is not ready"}, status_code=202)
+
+    # 작업 결과가 준비되어 있으면 결과를 반환
+    return {"title": history.title}
+
+
 @app.post("/home/{user_id}/{history_id}/title")
 async def change_title(request: Request, user_id: str, history_id: int, title: str, db: Session = Depends(get_db)):
     if not await get_current_user(request):
@@ -217,6 +195,24 @@ async def change_title(request: Request, user_id: str, history_id: int, title: s
     history = get_history_by_id(db, history_id)
     change_history_title(db, history, title)
     return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
+
+
+@app.get("/home/{user_id}/{history_id}/transcription")
+async def get_transcription(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
+    
+    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴
+    history = get_history_by_id(db, history_id)
+    if history is None:
+        return JSONResponse(content={"message": "History not found"}, status_code=404)
+
+    # 히스토리에 transcription 정보가 없으면 아직 작업이 완료되지 않은 상태
+    if not history.transcription:
+        return JSONResponse(content={"message": "Transcription is not ready"}, status_code=202)
+
+    # 작업 결과가 준비되어 있으면 결과를 반환
+    return {"transcription": history.transcription}
 
 
 @app.post("/home/{user_id}/{history_id}/transcription")
@@ -229,6 +225,24 @@ async def change_transcription(request: Request, user_id: str, history_id: int, 
     return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
 
 
+@app.get("/home/{user_id}/{history_id}/summary")
+async def get_summary(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
+    if not await get_current_user(request):
+        return {'message': 'login failed'}
+    
+    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴 (생략)
+    history = get_history_by_id(db, history_id)
+    if history is None:
+        return JSONResponse(content={"message": "History not found"}, status_code=404)
+
+    # 히스토리에 summary 정보가 없으면 아직 작업이 완료되지 않은 상태
+    if not history.summary:
+        return JSONResponse(content={"message": "Summary is not ready"}, status_code=202)
+
+    # 작업 결과가 준비되어 있으면 결과를 반환
+    return {"summary": history.summary}
+
+
 @app.post("/home/{user_id}/{history_id}/summary")
 async def change_summary(request: Request, user_id: str, history_id: int, summary: str, db: Session = Depends(get_db)):
     if not await get_current_user(request):
@@ -237,16 +251,25 @@ async def change_summary(request: Request, user_id: str, history_id: int, summar
     history = get_history_by_id(db, history_id)
     change_history_summary(db, history, summary)
     return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
-
+    
 
 @app.get("/home/{user_id}/{history_id}/qna")
-async def get_single_qna_page(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
+async def get_qna(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
     if not await get_current_user(request):
         return {'message': 'login failed'}
     
-    histories = get_user_histories(db, user_id)
+    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴 (생략)
+    history = get_history_by_id(db, history_id)
+    if history is None:
+        return JSONResponse(content={"message": "History not found"}, status_code=404)
+
+    # qna에 정보가 없으면 아직 작업이 완료되지 않은 상태
     qnas = get_history_qnas(db, history_id)
-    return templates.TemplateResponse("qna.html", context={"request": request, "histories": histories, "qnas": qnas})
+    if not qnas:
+        return JSONResponse(content={"message": "QnA is not ready"}, status_code=202)
+
+    # 작업 결과가 준비되어 있으면 결과를 반환
+    return {"qnas": qnas}
 
 
 @app.post("/home/{user_id}/{history_id}/{qna_id}/{type}")
