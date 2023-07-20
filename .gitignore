@@ -239,6 +239,7 @@ backend/migrations/
 backend/project.db
 backend/alembic.ini
 frontend/node_modules/*
+frontend/package-lock.json
 
 # secret key
 secret.py
