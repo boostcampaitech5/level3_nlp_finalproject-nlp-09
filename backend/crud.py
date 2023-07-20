@@ -31,6 +31,10 @@ def get_user_histories(db: Session, user_id: str, skip: int = 0, limit: int = 10
     return db.query(models.History).filter(models.History.user_id == user_id).offset(skip).limit(limit).all()
 
 
+def get_user_history_titles(db: Session, user_id: str, skip: int = 0, limit: int = 100):
+    return db.query(models.History.title, models.History.history_id).filter(models.History.user_id == user_id).offset(skip).limit(limit).all()
+
+
 def get_history_by_id(db: Session, history_id: int):
     return db.query(models.History).filter(models.History.history_id == history_id).first()
 
@@ -81,7 +85,7 @@ def create_qna(db: Session, qna: schemas.QnA):
     return db_item
 
 
-def get_history_qnas(db: Session, history_id: int, skip: int = 0, limit: int = 100):
+def get_qnas_by_history_id(db: Session, history_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.QnA).filter(models.QnA.history_id == history_id).offset(skip).limit(limit).all()
 
 
