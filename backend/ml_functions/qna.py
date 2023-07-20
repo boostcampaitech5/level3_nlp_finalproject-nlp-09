@@ -84,7 +84,7 @@ def generate_qnas_sync(context):
     return questions, answers
 
 
-def generate_qnas_in_group_sync(summary_list, summary_dummy):
+def generate_qnas_in_group_sync(summary_list):
     tokenizer, model, device = set_inference()
     # 임시 방편으로 짧은 문장 요약본을 10개씩 묶어 하나의 summary로 보고 questions, answers 생성 #
     summary_group = []
@@ -104,13 +104,13 @@ def generate_qnas_in_group_sync(summary_list, summary_dummy):
     return questions, answers
 
 
-def questionize(summary_list, summary_dummy):
-    questions, answers = generate_qnas_in_group_sync(summary_list, summary_dummy)
+def questionize(summary_list):
+    questions, answers = generate_qnas_in_group_sync(summary_list)
     return questions, answers
 
 
-async def questionize_async(summary_list, summary_dummy):
-    questions, answers = generate_qnas_in_group_sync(summary_list, summary_dummy)
+async def questionize_async(summary_list):
+    questions, answers = generate_qnas_in_group_sync(summary_list)
     return questions, answers
 
 
