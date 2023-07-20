@@ -6,7 +6,7 @@ from typing import Union
 import asyncio
 
 from pydantic import BaseModel
-from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request, Response, status
+from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request, Response, status, BackgroundTasks
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -116,7 +116,7 @@ async def get_histories(request: Request, user_id: str, db: Session = Depends(ge
     return templates.TemplateResponse("home.html", context={"request": request, "histories": histories, "history": history, "qnas": qnas})
 
 
-async def background_process(audio, db, new_history):
+def background_process_task(audio, db, new_history):
     audio_format = '.' + audio.filename.split('.')[-1]
     audio_name = audio.filename[:-len(audio_format)]
     temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
@@ -124,37 +124,34 @@ async def background_process(audio, db, new_history):
         shutil.copyfileobj(audio.file, buffer)
 
     title = audio_name
-    new_history = await asyncio.create_task(change_history_title_async(db, new_history, title))
-
-    transcription = await asyncio.create_task(transcribe_async(temp_audio.name))
-    new_history = await asyncio.create_task(change_history_transcription_async(db, new_history, transcription))
-
-    summary_list, summary = await asyncio.create_task(summarize_async(transcription))
-    new_history = await asyncio.create_task(change_history_summary_async(db, new_history, summary))
-
-    questions, answers = await asyncio.create_task(questionize_async(summary_list))
+    new_history = asyncio.run(change_history_title_async(db, new_history, title))
+    transcription = asyncio.run(transcribe_async(temp_audio.name))
+    new_history = asyncio.run(change_history_transcription_async(db, new_history, transcription))
+    summary_list, summary = asyncio.run(summarize_async(transcription))
+    new_history = asyncio.run(change_history_summary_async(db, new_history, summary))
+    questions, answers = asyncio.run(questionize_async(summary_list))
     for question, answer in zip(questions, answers):
         temp_qna = schemas.QnA(
             question=question, answer=answer, history_id=new_history.history_id
         )
-        await asyncio.create_task(create_qna_async(db, temp_qna))
+        asyncio.run(create_qna_async(db, temp_qna))
 
     temp_audio.close()
     os.remove(temp_audio.name)
 
 
 @app.post("/home/{user_id}")
-async def create_history(request: Request, user_id: str, audio: UploadFile = File(...), db: Session = Depends(get_db)):
+async def create_history(request: Request, user_id: str, background_tasks: BackgroundTasks, audio: UploadFile = File(...), db: Session = Depends(get_db)):
     empty_history = schemas.History(
         title="loading...", transcription="loading...", summary="loading..."
     )
     new_history = await asyncio.create_task(create_user_history_async(db, empty_history, user_id))
 
-    await background_process(audio, db, new_history)
+    background_tasks.add_task(background_process_task, audio, db, new_history)
 
-    return {"user_id": user_id, 
-            "history_list": get_user_histories(db, user_id), 
-            "history": get_history_by_id(db, new_history.history_id), 
+    return {"user_id": user_id,
+            "history_list": get_user_histories(db, user_id),
+            "history": get_history_by_id(db, new_history.history_id),
             "qnas": get_history_qnas(db, new_history.history_id)
             }
 
@@ -199,23 +196,12 @@ async def change_title(request: Request, user_id: str, history_id: int, title: s
     return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
 
 
-# @app.get("/home/{user_id}/{history_id}/transcription")
-# async def get_transcription(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
-#     if not await get_current_user(request):
-#         return {'message': 'login failed'}
-    
-#     history = await get_history_by_id_async(db, history_id)
-#     if history.transcription != 'loading...':
-#         transcription = history.transcription
-#     return {"transcription": transcription}
-
-
 @app.get("/home/{user_id}/{history_id}/transcription")
 async def get_transcription(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
     if not await get_current_user(request):
         return {'message': 'login failed'}
     
-    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴 (생략)
+    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴
     history = get_history_by_id(db, history_id)
     if history is None:
         return JSONResponse(content={"message": "History not found"}, status_code=404)
@@ -236,17 +222,6 @@ async def change_transcription(request: Request, user_id: str, history_id: int, 
     history = get_history_by_id(db, history_id)
     change_history_transcription(db, history, transcription)
     return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
-
-
-# @app.get("/home/{user_id}/{history_id}/summary")
-# async def get_summary(request: Request, user_id: str, history_id: str, db: Session = Depends(get_db)):
-#     if not await get_current_user(request):
-#         return {'message': 'login failed'}
-    
-#     history = await get_history_by_id_async(db, history_id)
-#     if history.summary != 'loading...':
-#         summary = history.summary
-#     return {"summary": summary}
 
 
 @app.get("/home/{user_id}/{history_id}/summary")
@@ -277,15 +252,17 @@ async def change_summary(request: Request, user_id: str, history_id: int, summar
     return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
 
 
-# @app.get("/home/{user_id}/{history_id}/qna")
-# async def get_single_qna_page(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
-#     if not await get_current_user(request):
-#         return {'message': 'login failed'}
-    
-#     histories = get_user_histories(db, user_id)
-#     qnas = get_history_qnas(db, history_id)
-#     return templates.TemplateResponse("qna.html", context={"request": request, "histories": histories, "qnas": qnas})
+async def check_qna_status(history_id: int, db: Session = Depends(get_db)):
+    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴 (생략)
+    history = get_history_by_id(db, history_id)
+    if history is None:
+        return JSONResponse(content={"message": "History not found"}, status_code=404)
 
+    # qna에 정보가 없으면 아직 작업이 완료되지 않은 상태
+    qnas = get_history_qnas(db, history_id)
+    if not qnas:
+        return JSONResponse(content={"message": "QnA is not ready"}, status_code=202)
+    
 
 @app.get("/home/{user_id}/{history_id}/qna")
 async def get_qna(request: Request, user_id: str, history_id: int, db: Session = Depends(get_db)):
