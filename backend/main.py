@@ -141,7 +141,7 @@ def background_process_task(audio, db, new_history):
 @app.post("/upload")
 async def create_history(request: Body, db: Session = Depends(get_db)):
     empty_history = schemas.History(
-        title="loading...", transcription="loading...", summary="loading..."
+        title="loading", transcription="loading", summary="loading"
     )
     new_history = await asyncio.create_task(create_user_history_async(db, empty_history, request.user_id))
 
