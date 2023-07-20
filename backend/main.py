@@ -136,9 +136,9 @@ def background_process_task(audio, db, new_history):
     os.remove(temp_audio.name)
 
 
-# 히스토리 생성
+# 파일 업로드, 히스토리 생성
 @app.post("/upload")
-async def create_history(access_token: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def create_history(background_tasks: BackgroundTasks, access_token: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
     info = get_current_user(access_token)
     if info["message"] != "Valid":
         return {"type": False, "message": info["message"]}
@@ -149,7 +149,6 @@ async def create_history(access_token: str = Form(...), file: UploadFile = File(
 
     new_history = await asyncio.create_task(create_user_history_async(db, empty_history, info["user_id"]))
 
-    background_tasks = BackgroundTasks()
     background_tasks.add_task(background_process_task,
                               file, db, new_history)
 
