@@ -7,6 +7,7 @@ SECRET_KEY = SECRET_KEY
 ALGORITHM = ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     if expires_delta:
@@ -19,16 +20,16 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 
 # 토큰 유효성 검사 함수
-async def get_current_user(access_token):
+def get_current_user(access_token):
     try:
         if not access_token:
             return {"message": "Invalid user"}
-        
+
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             return {"message": "Invalid user"}
-        return username
-    
+        return {"message": "Valid", "user_id": username}
+
     except JWTError:
         return {"message": "JWT Error raised"}
