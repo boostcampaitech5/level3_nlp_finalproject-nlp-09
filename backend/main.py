@@ -179,10 +179,17 @@ async def get_title(request: Request, user_id: str, history_id: int, db: Session
     if not await get_current_user(request):
         return {'message': 'login failed'}
     
-    history = await get_history_by_id_async(db, history_id)
-    if history.title != 'loading...':
-        title = history.title
-    return {"title": title}
+    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴
+    history = get_history_by_id(db, history_id)
+    if history is None:
+        return JSONResponse(content={"message": "History not found"}, status_code=404)
+
+    # 히스토리에 title 정보가 없으면 아직 작업이 완료되지 않은 상태
+    if not history.title:
+        return JSONResponse(content={"message": "Title is not ready"}, status_code=202)
+
+    # 작업 결과가 준비되어 있으면 결과를 반환
+    return {"title": history.title}
 
 
 @app.post("/home/{user_id}/{history_id}/title")
@@ -249,18 +256,6 @@ async def change_summary(request: Request, user_id: str, history_id: int, summar
     history = get_history_by_id(db, history_id)
     change_history_summary(db, history, summary)
     return RedirectResponse(url=f"/home/{user_id}/{history_id}", status_code=303)
-
-
-async def check_qna_status(history_id: int, db: Session = Depends(get_db)):
-    # 이전에 저장한 히스토리 ID로 히스토리 정보를 가져옴 (생략)
-    history = get_history_by_id(db, history_id)
-    if history is None:
-        return JSONResponse(content={"message": "History not found"}, status_code=404)
-
-    # qna에 정보가 없으면 아직 작업이 완료되지 않은 상태
-    qnas = get_history_qnas(db, history_id)
-    if not qnas:
-        return JSONResponse(content={"message": "QnA is not ready"}, status_code=202)
     
 
 @app.get("/home/{user_id}/{history_id}/qna")

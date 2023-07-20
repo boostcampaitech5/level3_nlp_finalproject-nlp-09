@@ -35,10 +35,6 @@ def get_history_by_id(db: Session, history_id: int):
     return db.query(models.History).filter(models.History.history_id == history_id).first()
 
 
-async def get_history_by_id_async(db: Session, history_id: int):
-    return db.query(models.History).filter(models.History.history_id == history_id).first()
-
-
 def create_user_history(db: Session, history: schemas.History, user_id: str):
     db_item = models.History(**history.dict(), user_id=user_id)
     db.add(db_item)
