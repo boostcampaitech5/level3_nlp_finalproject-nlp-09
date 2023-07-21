@@ -108,8 +108,8 @@ def signup(posted_user_info: User, db: Session = Depends(get_db)):
     return {"type": True, "message": "signup success"}
 
 
-# 모델 백그라운드 실행
-def background_process_task(audio, db, new_history):
+# transcribe 실행
+def transcription_task(audio, db, user_id):
     audio_format = '.' + audio.filename.split('.')[-1]
     audio_name = audio.filename[:-len(audio_format)]
     temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
@@ -117,11 +117,21 @@ def background_process_task(audio, db, new_history):
         shutil.copyfileobj(audio.file, buffer)
 
     title = audio_name
-    new_history = asyncio.run(
-        change_history_title_async(db, new_history, title))
-    transcription = asyncio.run(transcribe_async(temp_audio.name))
-    new_history = asyncio.run(
-        change_history_transcription_async(db, new_history, transcription))
+    new_history_with_title = schemas.History(
+        title=title, transcription="loading", summary="loading"
+    )
+    new_history = create_user_history(db, new_history_with_title, user_id)
+    transcription = transcribe(temp_audio.name)
+    new_history = change_history_transcription(db, new_history, transcription)
+
+    temp_audio.close()
+    os.remove(temp_audio.name)
+
+    return title, transcription, new_history
+
+
+# summarize, questionize 백그라운드 실행
+def background_summary_and_qna_task(transcription, db, new_history):
     summary_list, summary = asyncio.run(summarize_async(transcription))
     new_history = asyncio.run(
         change_history_summary_async(db, new_history, summary))
@@ -132,9 +142,6 @@ def background_process_task(audio, db, new_history):
         )
         asyncio.run(create_qna_async(db, temp_qna))
 
-    temp_audio.close()
-    os.remove(temp_audio.name)
-
 
 # 파일 업로드, 히스토리 생성
 @app.post("/upload")
@@ -143,16 +150,10 @@ async def create_history(background_tasks: BackgroundTasks, access_token: str = 
     if info["message"] != "Valid":
         return {"type": False, "message": info["message"]}
 
-    empty_history = schemas.History(
-        title="loading", transcription="loading", summary="loading"
-    )
+    title, transcription, new_history = transcription_task(file, db, info["user_id"])
+    background_tasks.add_task(background_summary_and_qna_task, transcription, db, new_history)
 
-    new_history = await asyncio.create_task(create_user_history_async(db, empty_history, info["user_id"]))
-
-    background_tasks.add_task(background_process_task,
-                              file, db, new_history)
-
-    return {"type": True, "message": "create success"}
+    return {"type": True, "message": "create success", "history_id": new_history.history_id, "title": title, "transcription": transcription}
 
 
 # 히스토리 목록
