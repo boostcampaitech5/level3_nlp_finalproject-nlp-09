@@ -240,6 +240,7 @@ backend/project.db
 backend/alembic.ini
 frontend/node_modules/*
 frontend/package-lock.json
+*.pdf
 
 # secret key
 secret.py
