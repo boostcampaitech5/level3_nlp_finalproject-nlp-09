@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 function SignUpId() {
-  const [ userName, setUserName ] = useState( '' );
-  const [ result, setResult ] = useState( null );
   let navigate = useNavigate();
   const onSubmit = ( event ) => {
     event.preventDefault()
@@ -13,19 +11,13 @@ function SignUpId() {
     if ( id === "" ) {
       <div>invalid</div>
     }
-    setUserName( id );
     console.log( "ID", id )
     let body = {
       user_id: id,
     }
     axios.post( "http://localhost:8000/signup/id_validation", body ).then( ( res ) => {
       console.log( res.data )
-      setResult( res.data )
-    } ).catch( error => {
-      // 요청 중 에러가 발생했을 때 처리
-      console.error( error );
-    } );
-    if ( result ) {
+      const result = res.data
       if ( result.type ) {
         let path = '/auth/signup/password';
         navigate( path, { state: { userName: id } } );
@@ -33,7 +25,12 @@ function SignUpId() {
       else {
         console.log( result.message )
       }
-    }
+
+    } ).catch( error => {
+      // 요청 중 에러가 발생했을 때 처리
+      console.error( error );
+    } );
+
   }
 
   return (

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [ userName, setUserName ] = useState( '' );
-  const [ result, setResult ] = useState( null );
+  // const [ result, setResult ] = useState( null );
   let navigate = useNavigate();
   const onSubmit = ( event ) => {
     event.preventDefault()
@@ -20,12 +20,8 @@ function Login() {
     }
     axios.post( "http://localhost:8000/id_validation", body ).then( ( res ) => {
       console.log( res.data )
-      setResult( res.data )
-    } ).catch( error => {
-      // 요청 중 에러가 발생했을 때 처리
-      console.error( error );
-    } );
-    if ( result ) {
+      const result = res.data
+
       if ( result.type ) {
         let path = '/auth/login/password';
         navigate( path, { state: { userName: id } } );
@@ -33,7 +29,12 @@ function Login() {
       else {
         console.log( result.message )
       }
-    }
+
+    } ).catch( error => {
+      // 요청 중 에러가 발생했을 때 처리
+      console.error( error );
+    } );
+
   }
 
   return (
@@ -114,11 +115,7 @@ function Login() {
                         className="c210378a2 _form-login-id"
                         data-form-primary="true"
                       >
-                        {/* <input
-                          type="hidden"
-                          name="state"
-                          defaultValue="hKFo2SBqR196VklTaVhKYkROVmU2cC1hQkwyeHRJZnFCcTRJX6Fur3VuaXZlcnNhbC1sb2dpbqN0aWTZIElpbFBEQXZTMkk2YURHV0pyZ3ZxSmd1MTFIcXF6US16o2NpZNkgVGRKSWNiZTE2V29USHROOTVueXl3aDVFNHlPbzZJdEc"
-                        /> */}
+
                         <div className="ce1af4c6a ca1203c69">
                           <div className="cedacd3f9">
                             <div className="input-wrapper _input-wrapper">
@@ -127,12 +124,7 @@ function Login() {
                                 data-action-text=""
                                 data-alternate-action-text=""
                               >
-                                {/* <label
-                                className="c8db587cf no-js ce86485cd c4daf1f57"
-                                htmlFor="username"
-                              >
-                                Email address
-                              </label> */}
+
                                 <input
                                   className="input ca4b7f6ee c41431cc2"
                                   inputMode="email"

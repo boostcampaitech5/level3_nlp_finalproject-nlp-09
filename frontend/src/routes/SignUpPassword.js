@@ -5,8 +5,6 @@ import { useState } from "react";
 function SignUpPassword() {
   const location = useLocation();
   const userInfo = location.state;
-  const [ password, setPassword ] = useState( '' )
-  const [ result, setResult ] = useState( '' )
   let navigate = useNavigate();
 
   const onSubmit = ( event ) => {
@@ -16,7 +14,7 @@ function SignUpPassword() {
     if ( password === "" ) {
       <div>invalid</div>
     }
-    setPassword( password );
+
     console.log( "Password", password )
     let body = {
       user_id: userInfo.userName,
@@ -24,15 +22,9 @@ function SignUpPassword() {
     }
     console.log( "password", password )
     axios.post( "http://localhost:8000/signup", body ).then( ( res ) => {
-      console.log( res.data.code )
       console.log( res.data )
-      setResult( res.data )
+      const result = res.data
 
-    } ).catch( error => {
-      // 요청 중 에러가 발생했을 때 처리
-      console.error( error );
-    } );
-    if ( result ) {
       if ( result.type ) {
         let path = '/auth/login';
         navigate( path, { state: { userName: userInfo.userName, userPassword: password } } );
@@ -40,7 +32,12 @@ function SignUpPassword() {
       else {
         console.log( result.message )
       }
-    }
+
+    } ).catch( error => {
+      // 요청 중 에러가 발생했을 때 처리
+      console.error( error );
+    } );
+
   }
   return (
     <div style={ { alignItems: 'center', justifyContent: 'center', display: 'flex', height: "100vh" } }>

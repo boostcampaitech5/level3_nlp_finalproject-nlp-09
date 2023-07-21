@@ -6,9 +6,6 @@ import cookie from 'react-cookies'
 function Password() {
   const location = useLocation();
   const userInfo = location.state;
-  const [ password, setPassword ] = useState( '' )
-  const [ accessToken, setAccessToken ] = useState( '' )
-  const [ result, setResult ] = useState( null )
   let navigate = useNavigate();
   console.log( "USERINFO", userInfo )
 
@@ -22,7 +19,7 @@ function Password() {
     if ( password === "" ) {
       <div>invalid</div>
     }
-    setPassword( password );
+
     console.log( "Password", password )
     let body = {
       user_id: userInfo.userName,
@@ -30,8 +27,19 @@ function Password() {
     }
     axios.post( "http://localhost:8000/token", body ).then( ( res ) => {
       console.log( res.data )
-      setResult( res.data )
-      setAccessToken( res.data.access_token )
+      const result = res.data
+      if ( result.type ) {
+        cookie.save( 'user', { userName: userInfo.userName, accessToken: result.access_token }, {
+          path: '/',
+        } )
+
+        let path = '/main';
+        navigate( path );
+      }
+      else {
+        console.log( result.message )
+      }
+
     } ).catch( error => {
       // 요청 중 에러가 발생했을 때 처리
       console.error( error );
@@ -39,19 +47,6 @@ function Password() {
 
   }
 
-  if ( result ) {
-    if ( result.type ) {
-      cookie.save( 'user', { userName: userInfo.userName, accessToken: accessToken }, {
-        path: '/',
-      } )
-
-      let path = '/main';
-      navigate( path );
-    }
-    else {
-      console.log( result.message )
-    }
-  }
   return (
     <div style={ { alignItems: 'center', justifyContent: 'center', display: 'flex', height: "100vh" } }>
       <>
