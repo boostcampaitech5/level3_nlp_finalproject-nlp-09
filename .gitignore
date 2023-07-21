@@ -238,7 +238,7 @@ sketch
 backend/migrations/
 backend/project.db
 backend/alembic.ini
-backend/pdf_tempfiles
+backend/pdf_tempfiles/*
 frontend/node_modules/*
 frontend/package-lock.json
 *.pdf
