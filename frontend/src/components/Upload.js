@@ -1,34 +1,43 @@
 import React, { useRef } from 'react';
 import axios from 'axios';
+import cookie from 'react-cookies'
+import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
   // a local state to store the currently selected file.
-  const [selectedFile, setSelectedFile] = React.useState(null);
-  const [isFileUpload, setIsFileUpload] = React.useState(false);
-  const [fileName, setFileName] = React.useState("")
+  const [ selectedFile, setSelectedFile ] = React.useState( null );
+  const [ isFileUpload, setIsFileUpload ] = React.useState( false );
+  const [ fileName, setFileName ] = React.useState( "" )
+  const navigate = useNavigate()
+
   const realInput = useRef();
-  const handleSubmit = async (event) => {
+  const handleSubmit = async ( event ) => {
     event.preventDefault()
     const formData = new FormData();
-    formData.append("selectedFile", selectedFile);
+    formData.append( "file", selectedFile );
+    formData.append( "access_token", cookie.load( 'user' ).accessToken );
     try {
-      const response = await axios({
+      const response = await axios( {
         method: "post",
-        url: "/api/upload/file",
+        url: "http://localhost:8000/upload",
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
-      });
-    } catch (error) {
-      console.log(error)
+      } );
+      console.log( response.data )
+    } catch ( error ) {
+      console.log( error )
+
+
     }
+    navigate( '/main', { state: true } )
   }
 
-  const handleFileSelect = (event) => {
-    if (event.target.files[0]) {
-      setSelectedFile(event.target.files[0])
-      console.log(event.target.files[0])
-      setFileName(event.target.files[0]['name'])
-      setIsFileUpload(true);
+  const handleFileSelect = ( event ) => {
+    if ( event.target.files[ 0 ] ) {
+      setSelectedFile( event.target.files[ 0 ] )
+      console.log( event.target.files[ 0 ] )
+      setFileName( event.target.files[ 0 ][ 'name' ] )
+      setIsFileUpload( true );
     }
   }
   const onClick = () => {
@@ -36,13 +45,13 @@ const Form = () => {
   }
   return (
     <div>
-      {isFileUpload ? <span class="flex flex-row justify-center">{fileName}</span> : null}
-      <form onSubmit={handleSubmit} className='flex gap-2'>
-        <input style={{ display: "none" }} type="file" accept="audio/*, .jpeg, .zip" ref={realInput} onChange={handleFileSelect} />
+      { isFileUpload ? <span class="flex flex-row justify-center">{ fileName }</span> : null }
+      <form onSubmit={ handleSubmit } className='flex gap-2'>
+        <input style={ { display: "none" } } type="file" accept="audio/*, .jpeg, .zip" ref={ realInput } onChange={ handleFileSelect } />
 
-        {isFileUpload ? null : <button onClick={onClick} class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded">Upload File</button>}
-        {isFileUpload ? <button type="button" onClick={onClick} class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" >Reupload</button> : null}
-        {isFileUpload ? <button class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" type="submit">GO</button> : null}
+        { isFileUpload ? null : <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded">Upload File</button> }
+        { isFileUpload ? <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" >Reupload</button> : null }
+        { isFileUpload ? <button class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" type="submit">GO</button> : null }
 
       </form>
     </div>

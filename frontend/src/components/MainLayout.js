@@ -132,7 +132,7 @@ const MainLayout = () => {
             </div>
           </div>
 
-          <div class="flex flex-row gap-2 justify-center" style={ { position: "relative", top: "-100px" } }>
+          <div className="flex flex-row gap-2 justify-center" style={ { position: "relative", top: "-100px" } }>
             <Upload />
           </div>
 

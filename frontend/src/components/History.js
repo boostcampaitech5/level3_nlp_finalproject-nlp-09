@@ -1,11 +1,14 @@
 import { useState } from "react"
+import PropTypes from "prop-types";
 import Del from "./Del"
 
-const History = () => {
+const History = ( { id, history } ) => {
   const [ isClicked, setIsClicked ] = useState( false )
   const [ del, setDel ] = useState( false )
+  console.log( "HI", id, history )
   const onClick = () => {
     console.log( "Clicked" )
+    console.log( id )
     setIsClicked( ( bool ) => ( !bool ) )
   }
   const onClickDel = () => {
@@ -34,7 +37,7 @@ const History = () => {
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             <div className="flex-1 text-ellipsis max-h-5 overflow-hidden break-all relative">
-              React 컴포넌트 이름 규칙이야아하하하하하하하하하하
+              { history }
             </div>
 
           </button>
@@ -66,6 +69,11 @@ const History = () => {
     </div>
   )
 
+}
+
+History.propTypes = {
+  id: PropTypes.number.isRequired,
+  history: PropTypes.string.isRequired
 }
 
 export default History
