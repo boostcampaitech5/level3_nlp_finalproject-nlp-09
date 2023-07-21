@@ -1,19 +1,39 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import PropTypes from "prop-types";
+import axios from "axios";
+import cookie from 'react-cookies'
 import Del from "./Del"
 
 const History = ( { id, history } ) => {
-  const [ isClicked, setIsClicked ] = useState( false )
-  const [ del, setDel ] = useState( false )
-  console.log( "HI", id, history )
+  const [ isClicked, setIsClicked ] = useState( false );
+  const [ del, setDel ] = useState( false );
+
+  const accessToken = cookie.load( 'user' ).accessToken
+  const historyID = id
   const onClick = () => {
-    console.log( "Clicked" )
-    console.log( id )
-    setIsClicked( ( bool ) => ( !bool ) )
+    console.log( "Clicked" );
+    console.log( id );
+    setIsClicked( ( bool ) => ( !bool ) );
   }
   const onClickDel = () => {
     console.log( "DEL" )
-    setDel( true );
+    const body = {
+      access_token: accessToken,
+      history_id: historyID
+    }
+    axios.post( "http://localhost:8000/history/delete", body ).then( ( res ) => {
+      console.log( res.data );
+      const result = res.data
+      if ( result.type ) { console.log( "Delete Success!" ); setDel( true ); }
+      else {
+        console.log( result.message )
+      }
+
+    } ).catch( error => {
+      // 요청 중 에러가 발생했을 때 처리
+      console.error( error );
+    } )
+
   }
 
   return (
@@ -42,7 +62,7 @@ const History = ( { id, history } ) => {
 
           </button>
 
-          { isClicked ? null : (
+          { isClicked ? (
             <button onClick={ onClickDel } className="p-1 hover:text-white">
               <svg
                 stroke="currentColor"
@@ -63,6 +83,7 @@ const History = ( { id, history } ) => {
               </svg>
             </button>
           )
+            : null
           }
 
         </div > ) }
