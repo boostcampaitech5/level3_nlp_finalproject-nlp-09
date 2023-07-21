@@ -25,16 +25,12 @@ from dependency import *
 from sqlalchemy.orm import Session
 
 # audio_processing
-sys.path.append('./')  # nopep8
-sys.path.append('./ml_functions')  # nopep8
 from ml_functions.stt import transcribe, transcribe_async, transcribe_test
 from ml_functions.summary import summarize, summarize_async, summarize_test
 from ml_functions.qna import questionize, questionize_async, questionize_test
 
 # pdf export
-from weasyprint import HTML, CSS
-from weasyprint.fonts import FontConfiguration
-from markdown2 import markdown_path
+from pdf_export.convert_pdf import text_to_pdf
 
 # login
 from login import get_current_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -301,40 +297,6 @@ async def change_qna(request: Body, db: Session = Depends(get_db)):
     return {"type": True, "message": "change success"}
 
 
-# TODO: Markdown to PDF 변환기
-def md2pdf(filename, output):
-    html = markdown_path(filename, encoding="utf-8")
-    print(html)
-    html_utf8 = f'<meta charset="utf-8">\n{html}'
-    css_with_font_family = CSS(string='@font-face { font-family: NanumSquareR; src: /usr/share/fonts/truetype/myfonts/NanumSquareR.ttf; }')
-    HTML(string=html_utf8, encoding="utf-8").write_pdf(output, stylesheets=[css_with_font_family])
-
-
-# TODO: Markdown 형식 텍스트 만들기
-def text_to_pdf(output_filename: str, content_types: List, history: History, db: Session = Depends(get_db)):
-    md_title, md_contents = f"# {history.title}", ""
-    if 'transcription' in content_types:
-        md_history = f"## 속기\n\n{history.transcription}"
-        md_contents += md_history
-    if 'summary' in content_types:
-        md_summary = f"## 요약\n\n{history.summary}"
-        md_contents += md_summary
-    if 'qnas' in content_types:
-        qnas = get_qnas_by_history_id(db, history.history_id)
-        md_qnas = "\n\n## 퀴즈"
-        for qna_number, qna in enumerate(qnas):
-            md_qna = f"\n### 퀴즈 {qna_number+1}.\n{qna.question}\n\n{qna.answer}"
-            md_qnas += md_qna
-        md_contents += md_qnas
-
-    md_text = md_title + "\n\n" + md_contents
-
-    temp_md_file = tempfile.NamedTemporaryFile(mode="w", delete=True, suffix=".md")
-    with open(temp_md_file.name, "w", encoding="utf-8") as temp_file:
-        temp_file.write(md_text)
-    md2pdf(temp_md_file.name, output_filename)
-
-
 # TODO: 속기본 PDF 내보내기 엔드포인트
 @app.post("/history/export_pdf")
 async def export_pdf(request: Body, db: Session = Depends(get_db)):
@@ -344,7 +306,7 @@ async def export_pdf(request: Body, db: Session = Depends(get_db)):
     
     current_time = datetime.datetime.now().strftime("%y%m%d%H%M%S")
     pdf_filename = f"lecnrec_{current_time}.pdf"
-    content_types = ['transcription', 'qnas']
+    content_types = ['transcription', 'summary', 'qnas']
     history = get_history_by_id(db, request.history_id)
     text_to_pdf(
         output_filename=pdf_filename,
