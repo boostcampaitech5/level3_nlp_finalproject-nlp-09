@@ -3,15 +3,14 @@ import sys
 import os
 sys.path.append('../')
 
-from typing import List
+from typing import Dict
 from models import History
 from sqlalchemy.orm import Session
 from fastapi import Depends
 from dependency import get_db
 from crud import get_qnas_by_history_id
 
-from weasyprint import HTML, CSS
-from weasyprint.fonts import FontConfiguration
+from weasyprint import HTML
 from markdown2 import markdown_path
 import datetime
 
@@ -40,7 +39,7 @@ def md2pdf(filename, output):
     html.write_pdf(output)
 
 
-def text_to_pdf(content_types: List, history: History, db: Session = Depends(get_db)):
+def text_to_pdf(is_exported: Dict, history: History, db: Session = Depends(get_db)):
     current_time = datetime.datetime.now().strftime("%y%m%d%H%M%S")
     pdf_filename = f"lecnrec_{history.title}_{current_time}.pdf"
     pdf_temppath = './pdf_tempfiles'
@@ -48,13 +47,13 @@ def text_to_pdf(content_types: List, history: History, db: Session = Depends(get
 
     title = history.title.replace('_', '\_')
     md_title, md_contents = f"# {title}", ""
-    if 'transcription' in content_types:
+    if is_exported['transcription']:
         md_history = f"## 속기\n\n{history.transcription}"
         md_contents += "\n\n" + md_history
-    if 'summary' in content_types:
+    if is_exported['summary']:
         md_summary = f"## 요약\n\n{history.summary}"
         md_contents += "\n\n" + md_summary
-    if 'qnas' in content_types:
+    if is_exported['qnas']:
         qnas = get_qnas_by_history_id(db, history.history_id)
         md_qnas = "\n\n" + "## 퀴즈"
         for qna_number, qna in enumerate(qnas):

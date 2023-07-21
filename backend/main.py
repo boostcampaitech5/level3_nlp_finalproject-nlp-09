@@ -298,14 +298,18 @@ async def change_qna(request: Body, db: Session = Depends(get_db)):
 
 
 @app.post("/history/export_pdf")
-async def export_pdf(history_id: int, access_token: str = Form(...), db: Session = Depends(get_db)):
+async def export_pdf(history_id: int, ex_trans: bool = True, ex_summ: bool = True, ex_qna: bool = True, access_token: str = Form(...), db: Session = Depends(get_db)):
     info = get_current_user(access_token)
     if info["message"] != "Valid":
         return {"type": False, "message": info["message"]}
     
     history = get_history_by_id(db, history_id)
-    content_types = ['transcription', 'summary', 'qnas']
-    pdf_filepath, pdf_filename = text_to_pdf(content_types=content_types, history=history, db=db)
+    is_exported = {
+        'transcription' : ex_trans, 
+        'summary': ex_summ,
+        'qnas': ex_qna
+        }
+    pdf_filepath, pdf_filename = text_to_pdf(is_exported=is_exported, history=history, db=db)
 
     return StreamingResponse(open(pdf_filepath, "rb"), headers={"Content-Disposition": f"attachment; filename={pdf_filename}"})
 
