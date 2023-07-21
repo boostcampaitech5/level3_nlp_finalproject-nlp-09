@@ -10,7 +10,7 @@ import datetime
 from pydantic import BaseModel
 from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request, Response, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -297,24 +297,17 @@ async def change_qna(request: Body, db: Session = Depends(get_db)):
     return {"type": True, "message": "change success"}
 
 
-# TODO: 속기본 PDF 내보내기 엔드포인트
 @app.post("/history/export_pdf")
-async def export_pdf(request: Body, db: Session = Depends(get_db)):
-    info = get_current_user(request.access_token)
+async def export_pdf(history_id: int, access_token: str = Form(...), db: Session = Depends(get_db)):
+    info = get_current_user(access_token)
     if info["message"] != "Valid":
         return {"type": False, "message": info["message"]}
     
-    current_time = datetime.datetime.now().strftime("%y%m%d%H%M%S")
-    pdf_filename = f"lecnrec_{current_time}.pdf"
+    history = get_history_by_id(db, history_id)
     content_types = ['transcription', 'summary', 'qnas']
-    history = get_history_by_id(db, request.history_id)
-    text_to_pdf(
-        output_filename=pdf_filename,
-        content_types=content_types,
-        history=history,
-        db=db
-    )
-    return FileResponse(pdf_filename, filename=pdf_filename, headers={"Content-Disposition": "attachment"})
+    pdf_filepath, pdf_filename = text_to_pdf(content_types=content_types, history=history, db=db)
+
+    return StreamingResponse(open(pdf_filepath, "rb"), headers={"Content-Disposition": f"attachment; filename={pdf_filename}"})
 
 
 if __name__ == "__main__":

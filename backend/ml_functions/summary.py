@@ -122,7 +122,7 @@ def summarize(transcription):
     grouped_data = sentence_grouper.grouping(data)
     raw_summary = text_summarizer.inference_group(grouped_data)
     summary_list = text_summarizer.post_processing(raw_summary)
-    summary = '\n'.join(summary_list)
+    summary = '- ' + '\n\n- '.join(summary_list)
     return summary_list, summary
 
 

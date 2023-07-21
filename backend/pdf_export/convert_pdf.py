@@ -1,5 +1,6 @@
 import tempfile
 import sys
+import os
 sys.path.append('../')
 
 from typing import List
@@ -12,10 +13,11 @@ from crud import get_qnas_by_history_id
 from weasyprint import HTML, CSS
 from weasyprint.fonts import FontConfiguration
 from markdown2 import markdown_path
-import markdown
+import datetime
 
 
 def md2pdf(filename, output):
+    print(output)
     html_string = markdown_path(filename, encoding="utf-8")
     html_font = 'NanumSquareR'
     html_with_font_css = f'''
@@ -25,6 +27,8 @@ def md2pdf(filename, output):
                 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@2.0/nanumsquare.css">
                 <style>
                     body, table, div, p {{ font-family: '{html_font}'; text-align: justify; }}
+                    h2:first-of-type {{ page-break-before: avoid; }}
+                    h2 {{ page-break-before: always; }}
                 </style>
             </head>
             <body>
@@ -36,8 +40,14 @@ def md2pdf(filename, output):
     html.write_pdf(output)
 
 
-def text_to_pdf(output_filename: str, content_types: List, history: History, db: Session = Depends(get_db)):
-    md_title, md_contents = f"# {history.title}", ""
+def text_to_pdf(content_types: List, history: History, db: Session = Depends(get_db)):
+    current_time = datetime.datetime.now().strftime("%y%m%d%H%M%S")
+    pdf_filename = f"lecnrec_{history.title}_{current_time}.pdf"
+    pdf_temppath = './pdf_tempfiles'
+    pdf_filepath = os.path.join(pdf_temppath, pdf_filename)
+
+    title = history.title.replace('_', '\_')
+    md_title, md_contents = f"# {title}", ""
     if 'transcription' in content_types:
         md_history = f"## 속기\n\n{history.transcription}"
         md_contents += "\n\n" + md_history
@@ -48,7 +58,7 @@ def text_to_pdf(output_filename: str, content_types: List, history: History, db:
         qnas = get_qnas_by_history_id(db, history.history_id)
         md_qnas = "\n\n" + "## 퀴즈"
         for qna_number, qna in enumerate(qnas):
-            md_qna = f"### 퀴즈 {qna_number+1}.\nQ. {qna.question}\n\nA. {qna.answer}"
+            md_qna = f"### 퀴즈 {qna_number+1}.\nQ. {qna.question}\nA. {qna.answer}"
             md_qnas += "\n" + md_qna
         md_contents += md_qnas
 
@@ -57,13 +67,14 @@ def text_to_pdf(output_filename: str, content_types: List, history: History, db:
     temp_md_file = tempfile.NamedTemporaryFile(mode="w", delete=True, suffix=".md")
     with open(temp_md_file.name, "w", encoding="utf-8") as temp_file:
         temp_file.write(md_text)
-    md2pdf(temp_md_file.name, output_filename)
+    md2pdf(temp_md_file.name, pdf_filepath)
+
+    return pdf_filepath, pdf_filename
 
 
 def main():
     import schemas
     from crud import create_user_history, create_qna, delete_user_history, delete_history_qna
-    import datetime
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
 
@@ -82,11 +93,8 @@ def main():
     )
     test_qna = create_qna(db, test_qna)
 
-    current_time = datetime.datetime.now().strftime("%y%m%d%H%M%S")
-    pdf_filename = f"justfortest_{current_time}.pdf"
     content_types = ['transcription', 'summary', 'qnas']
     text_to_pdf(
-        output_filename=pdf_filename,
         content_types=content_types,
         history=test_history,
         db=db
