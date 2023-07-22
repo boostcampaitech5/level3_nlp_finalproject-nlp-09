@@ -5,25 +5,27 @@ import { useNavigate } from 'react-router-dom';
 import { tokenExpiration } from "../utils/Logout";
 import Loading from './Loading';
 
-const Upload = ( { onUpload, onWhich } ) => {
+const UploadUrl = ( { onUpload } ) => {
   // a local state to store the currently selected file.
-  const [ selectedFile, setSelectedFile ] = React.useState( null );
   const [ isFileUpload, setIsFileUpload ] = React.useState( false );
-  const [ fileName, setFileName ] = React.useState( "" )
   const [ isSubmit, setIsSubmit ] = React.useState( false );
+  const [ text, setText ] = React.useState( "" )
   const navigate = useNavigate()
 
-  const realInput = useRef();
+  const onChange = ( event ) => {
+    setText( event.target.value )
+  }
   const handleSubmit = async ( event ) => {
     event.preventDefault()
+    console.log( event )
     const formData = new FormData();
-    formData.append( "file", selectedFile );
+    formData.append( "url", text );
     formData.append( "access_token", cookie.load( 'user' ).accessToken );
     setIsSubmit( true );
     try {
       const response = await axios( {
         method: "post",
-        url: "http://localhost:8000/upload",
+        url: "http://localhost:8000/upload_link",
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
       } );
@@ -41,17 +43,9 @@ const Upload = ( { onUpload, onWhich } ) => {
 
   }
 
-  const handleFileSelect = ( event ) => {
-    if ( event.target.files[ 0 ] ) {
-      onWhich( 2 )
-      setSelectedFile( event.target.files[ 0 ] )
-      console.log( event.target.files[ 0 ] )
-      setFileName( event.target.files[ 0 ][ 'name' ] )
-      setIsFileUpload( true );
-    }
-  }
   const onClick = () => {
-    realInput.current.click();
+
+    setIsFileUpload( ( bool ) => !bool )
   }
   return (
     <div>
@@ -63,20 +57,26 @@ const Upload = ( { onUpload, onWhich } ) => {
 
 
 
-            { isFileUpload ? <span class="flex flex-row justify-center">{ fileName }</span> : null }
+            { isFileUpload ? <span class="flex flex-row justify-center">{ text }</span> : null }
             <form onSubmit={ handleSubmit } className='flex flex-row gap-2 itmes-center'>
-              <input style={ { display: "none" } } type="file" accept="audio/*," ref={ realInput } onChange={ handleFileSelect } />
+              <div className="flex flex-row justify-center">
+                { isFileUpload ? null :
+                  <div className="flex flex-row justify-center" >
+                    <input type="text" onChange={ onChange } value={ text } placeholder="Put your audio link" className="flex w-full gap-2 bg-white-600 hover:bg-white-800 relative text-black py-2.5 px-20 sm:px-80 rounded border-3 border-slate-500 text-center" />
+                    <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-1 px-3 rounded" >Upload</button>
+                  </div>
+                }
+              </div>
 
-              { isFileUpload ? null : <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded ">Upload File</button> }
               { isFileUpload ? <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" >Reupload</button> : null }
               { isFileUpload ? <button class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" type="submit">GO</button> : null }
 
 
             </form>
-          </div>
+          </div >
       }
-    </div>
+    </div >
   )
 };
 
-export default Upload;
+export default UploadUrl;
