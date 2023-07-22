@@ -30,7 +30,7 @@ class SentenceGrouper:
         similarity = cosine_similarity(vector1, vector2)
         return similarity
 
-    def grouping(self, sentences, length_threshold=30, similarity_threshold_for_short=0.2, similarity_threshold_for_long=0.3, length_threshold_for_paragraph=100):
+    def grouping(self, sentences, length_threshold=30, similarity_threshold_for_short=0.2, similarity_threshold_for_long=0.3, length_threshold_for_paragraph=50):
         stack = []
 
         for sentence in tqdm(sentences):
@@ -65,7 +65,7 @@ class SentenceGrouper:
         return filtered_stack
 
     
-    def re_grouping(self, filtered_list, paragraph_group_num: int = 2, paragraph_sentence_num: int = 3):
+    def re_grouping(self, filtered_list, paragraph_group_num: int = 2, paragraph_sentence_num: int = 2):
     
         def split_paragraph(sentences, sentences_num, isGrouping):
             temp = []
@@ -151,13 +151,20 @@ def summarize(transcription):
         raw_summary = text_summarizer.inference_group(paragraph)
         summary_list.append(' '.join(text_summarizer.post_processing(raw_summary)))
         
-    summary = '\n\n'.join(summary_list)
+    summary = '\n'.join(summary_list)
     
     return summary_list, summary
 
 
 async def summarize_async(transcription):
     summary_list, summary = summarize(transcription)
+    return summary_list, summary
+
+
+async def summarize_test(transcription):
+    await asyncio.sleep(5)
+    summary_list = ["Sample Summary 1", "Sample Summary 2", "Sample Summary 3"]
+    summary = "Sample Summary 1\nSample Summary2\nSample Summary3"
     return summary_list, summary
 
 
