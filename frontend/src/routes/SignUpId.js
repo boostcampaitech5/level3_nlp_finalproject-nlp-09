@@ -1,7 +1,5 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { tokenExpiration } from "../utils/Logout";
 
 function SignUpId() {
   let navigate = useNavigate();
@@ -24,9 +22,6 @@ function SignUpId() {
         navigate( path, { state: { userName: id } } );
       }
       else {
-        if ( tokenExpiration( result.message ) ) {
-          navigate( '/' )
-        }
         console.log( result.message )
       }
 
