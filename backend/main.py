@@ -5,6 +5,7 @@ import os
 import sys
 from typing import Union
 import asyncio
+import time
 
 from pydantic import BaseModel
 from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request, Response, status, BackgroundTasks
@@ -29,6 +30,7 @@ sys.path.append('./ml_functions')  # nopep8
 from ml_functions.stt import transcribe, transcribe_async, transcribe_test
 from ml_functions.summary import summarize, summarize_async, summarize_test
 from ml_functions.qna import questionize, questionize_async, questionize_test
+import pytube
 
 # login
 from login import get_current_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -108,8 +110,8 @@ def signup(posted_user_info: User, db: Session = Depends(get_db)):
     return {"type": True, "message": "signup success"}
 
 
-# 모델 백그라운드 실행
-def background_process_task(audio, db, new_history):
+# transcribe 실행
+def transcription_task(audio, db, user_id):
     audio_format = '.' + audio.filename.split('.')[-1]
     audio_name = audio.filename[:-len(audio_format)]
     temp_audio = tempfile.NamedTemporaryFile(delete=False, suffix=audio_format)
@@ -117,11 +119,36 @@ def background_process_task(audio, db, new_history):
         shutil.copyfileobj(audio.file, buffer)
 
     title = audio_name
-    new_history = asyncio.run(
-        change_history_title_async(db, new_history, title))
-    transcription = asyncio.run(transcribe_async(temp_audio.name))
-    new_history = asyncio.run(
-        change_history_transcription_async(db, new_history, transcription))
+    new_history_with_title = schemas.History(
+        title=title, transcription="loading", summary="loading"
+    )
+    new_history = create_user_history(db, new_history_with_title, user_id)
+    transcription = transcribe(temp_audio.name)
+    new_history = change_history_transcription(db, new_history, transcription)
+
+    temp_audio.close()
+    os.remove(temp_audio.name)
+
+    return title, transcription, new_history
+
+
+# link transcribe 실행
+def transcription_task_link(audio_name, db, user_id):
+
+    new_history_with_title = schemas.History(
+        title=audio_name, transcription="loading", summary="loading"
+    )
+    new_history = create_user_history(db, new_history_with_title, user_id)
+    transcription = transcribe("./temp/"+audio_name)
+    new_history = change_history_transcription(db, new_history, transcription)
+
+    os.remove("./temp/"+audio_name)
+
+    return audio_name, transcription, new_history
+
+
+# summarize, questionize 백그라운드 실행
+def background_summary_and_qna_task(transcription, db, new_history):
     summary_list, summary = asyncio.run(summarize_async(transcription))
     new_history = asyncio.run(
         change_history_summary_async(db, new_history, summary))
@@ -132,8 +159,18 @@ def background_process_task(audio, db, new_history):
         )
         asyncio.run(create_qna_async(db, temp_qna))
 
-    temp_audio.close()
-    os.remove(temp_audio.name)
+
+# link summarize, quenstionize 백그라운드 실행
+def background_summary_and_qna_task_link(transcription, db, new_history):
+    summary_list, summary = asyncio.run(summarize_async(transcription))
+    new_history = asyncio.run(
+        change_history_summary_async(db, new_history, summary))
+    questions, answers = asyncio.run(questionize_async(summary_list))
+    for question, answer in zip(questions, answers):
+        temp_qna = schemas.QnA(
+            question=question, answer=answer, history_id=new_history.history_id
+        )
+        asyncio.run(create_qna_async(db, temp_qna))
 
 
 # 파일 업로드, 히스토리 생성
@@ -143,16 +180,32 @@ async def create_history(background_tasks: BackgroundTasks, access_token: str = 
     if info["message"] != "Valid":
         return {"type": False, "message": info["message"]}
 
-    empty_history = schemas.History(
-        title="loading", transcription="loading", summary="loading"
-    )
+    title, transcription, new_history = transcription_task(
+        file, db, info["user_id"])
+    background_tasks.add_task(
+        background_summary_and_qna_task, transcription, db, new_history)
 
-    new_history = await asyncio.create_task(create_user_history_async(db, empty_history, info["user_id"]))
+    return {"type": True, "message": "create success", "history": {"history_id": new_history.history_id, "title": title}, "transcription": transcription}
 
-    background_tasks.add_task(background_process_task,
-                              file, db, new_history)
 
-    return {"type": True, "message": "create success"}
+# 링크 업로드, 히스토리 생성
+@app.post("/upload_link")
+async def create_history_link(background_tasks: BackgroundTasks, access_token: str = Form(...), url: str = Form(...), db: Session = Depends(get_db)):
+    info = get_current_user(access_token)
+    if info["message"] != "Valid":
+        return {"type": False, "message": info["message"]}
+
+    yt = pytube.YouTube(url)
+    audio = yt.streams.get_audio_only()
+    filename = time.strftime("%Y%m%d-%H%M%S")+".mp4"
+    audio.download(filename=filename, output_path="./temp")
+
+    title, transcription, new_history = transcription_task_link(
+        filename, db, info["user_id"])
+    background_tasks.add_task(
+        background_summary_and_qna_task_link, transcription, db, new_history)
+
+    return {"type": True, "message": "create success", "history": {"history_id": new_history.history_id, "title": title}, "transcription": transcription}
 
 
 # 히스토리 목록
