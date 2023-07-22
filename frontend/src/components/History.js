@@ -26,7 +26,7 @@ const History = ( { isActive, id, history, onClickHistory } ) => {
     axios.post( "http://localhost:8000/history/delete", body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
-      if ( result.type ) { console.log( "Delete Success!" ); setDel( true ); }
+      if ( result.type ) { console.log( "Delete Success!" ); setDel( true ); onClickHistory( null ); }
       else {
         if ( tokenExpiration( result.message ) ) {
           navigate( '/' )
