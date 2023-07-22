@@ -45,9 +45,9 @@ function Main() {
           }
           else {
             if ( tokenExpiration( result.message ) ) {
-              console.log( "!!!!" )
+              navigate( '/' )
             }
-            navigate( '/' )
+
             console.log( result.message )
           }
         }
