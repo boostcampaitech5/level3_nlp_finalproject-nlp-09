@@ -31,7 +31,7 @@ export function Summ( { historyId } ) {
       console.error( error );
     } )
   }
-  useEffect( () => { fetchData() }, [] )
+  useEffect( () => { fetchData() }, [ historyId ] )
 
   return (
     <div style={ {

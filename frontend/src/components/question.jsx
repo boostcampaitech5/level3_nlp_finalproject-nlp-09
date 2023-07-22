@@ -34,7 +34,7 @@ export function Ques( { historyId } ) {
   }
   useEffect( () => {
     fetchData();
-  }, [] )
+  }, [ historyId ] )
   return (
     <div style={ { backgroundColor: '#39A387', color: "black", width: "100%", height: "100%", position: "relative", paddingTop: "40px", borderRadius: "15px", boxShadow: "10px 10px 5px gray" } }>
 

@@ -29,7 +29,7 @@ export function Rec( { historyId } ) {
       // 요청 중 에러가 발생했을 때 처리
       console.error( error );
     } )
-  }, [] )
+  }, [ historyId ] )
 
   return (
     <div style={ { backgroundColor: '#F6755E', color: "black", width: "100%", height: "100%", position: "relative", paddingTop: "40px", borderRadius: "15px", boxShadow: "10px 10px 5px gray", } } >
