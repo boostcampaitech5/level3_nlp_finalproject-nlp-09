@@ -1,26 +1,32 @@
 import Spinner from "./Spinner";
 import axios from "axios";
 import cookie from 'react-cookies'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const title = "Summary";
+const RETRY_DELAY_MS = 2000; // 2초 간격으로 재시도
 
 export function Summ( { historyId } ) {
   const [ summary, setSummary ] = useState( null )
-  const body = {
-    access_token: cookie.load( 'user' ).accessToken,
-    history_id: historyId
-  }
-  axios.post( "http://localhost:8000/history/summary", body ).then( ( res ) => {
-    console.log( res.data );
-    const result = res.data
-    if ( result.type ) { setSummary( result.summary ) }
-    else { console.log( result.message ) }
 
-  } ).catch( error => {
-    // 요청 중 에러가 발생했을 때 처리
-    console.error( error );
-  } )
+  const fetchData = () => {
+    const body = {
+      access_token: cookie.load( 'user' ).accessToken,
+      history_id: historyId
+    }
+    axios.post( "http://localhost:8000/history/summary", body ).then( ( res ) => {
+      console.log( res.data );
+      const result = res.data
+      if ( result.type ) { setSummary( result.summary ) }
+      else { console.log( result.message ); setTimeout( fetchData, RETRY_DELAY_MS ) }
+
+    } ).catch( error => {
+      // 요청 중 에러가 발생했을 때 처리
+      console.error( error );
+    } )
+  }
+  useEffect( () => { fetchData() }, [] )
+
   return (
     <div style={ {
       backgroundColor: '#FFA831', color: "black", width: "100%", height: "100%", position: "relative", paddingTop: "40px", borderRadius: "15px", boxShadow: "10px 10px 5px gray"
