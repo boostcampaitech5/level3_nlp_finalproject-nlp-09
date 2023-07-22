@@ -18,11 +18,11 @@ function MainContent( { selectedId } ) {
         </div>
       </div>
 
-      <Link to="/main/record" style={ { width: "95%", height: "70px", backgroundColor: '#F6755E', boxShadow: "5px 5px 10px white", borderRadius: "5px", clipPath: "polygon(36% 0, 100% 0, 100% 100%, 0% 100%)", marginTop: "84px", paddingTop: "25px", paddingLeft: "15px", justifySelf: "center" } }>
+      <Link to="/main/record" style={ { width: "95%", height: "70px", backgroundColor: '#F6755E', boxShadow: "5px 5px 10px white", borderRadius: "5px", clipPath: "polygon(36% 0, 100% 0, 100% 100%, 0% 100%)", marginTop: "84px", paddingTop: "25px", paddingLeft: "35px", justifySelf: "center" } }>
         <p class="font-extrabold text-white text-lg"><em>속기본</em></p></Link>
-      <Link to="/main/summary" style={ { backgroundColor: '#FFA831', width: "95%", height: "70px", boxShadow: "5px 5px 10px white", borderRadius: "5px", clipPath: "polygon(36% 0, 100% 0, 100% 100%, 0% 100%)", marginTop: "84px", paddingTop: "25px", paddingLeft: "15px" } }>
+      <Link to="/main/summary" style={ { backgroundColor: '#FFA831', width: "95%", height: "70px", boxShadow: "5px 5px 10px white", borderRadius: "5px", clipPath: "polygon(36% 0, 100% 0, 100% 100%, 0% 100%)", marginTop: "84px", paddingTop: "25px", paddingLeft: "35px" } }>
         <p class="font-extrabold text-white text-lg"><em>요약본</em></p></Link>
-      <Link to="/main/question" style={ { backgroundColor: '#39A387', width: "95%", height: "70px", boxShadow: "5px 5px 10px white", borderRadius: "5px", clipPath: "polygon(36% 0, 100% 0, 100% 100%, 0% 100%)", marginTop: "84px", paddingTop: "25px", paddingLeft: "15px" } }>
+      <Link to="/main/question" style={ { backgroundColor: '#39A387', width: "95%", height: "70px", boxShadow: "5px 5px 10px white", borderRadius: "5px", clipPath: "polygon(36% 0, 100% 0, 100% 100%, 0% 100%)", marginTop: "84px", paddingTop: "25px", paddingLeft: "40px" } }>
         <p class="font-extrabold text-white text-lg"><em>문제</em></p></Link>
       <div className="item" style={ { backgroundColor: 'white', color: "black", width: "95%", height: "100%", paddingBottom: "30px" } }>
         <Routes>
