@@ -1,4 +1,3 @@
-import { Route, Routes } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import cookie from 'react-cookies'
