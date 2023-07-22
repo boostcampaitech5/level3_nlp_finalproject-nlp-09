@@ -139,6 +139,8 @@ def background_summary_and_qna_task(transcription, db, new_history):
         change_history_summary_async(db, new_history, summary))
     questions, answers = asyncio.run(questionize_async(summary_list))
     for question, answer in zip(questions, answers):
+        if question == '<no_question>' or answer == '<no_answer>':
+            continue
         temp_qna = schemas.QnA(
             question=question, answer=answer, history_id=new_history.history_id
         )
