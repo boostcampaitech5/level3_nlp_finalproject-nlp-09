@@ -67,7 +67,7 @@ def qna_postprocess(generated_qnas, n_qna=3):
 
         except ValueError:
             continue
-
+    
     if len(answers) < n_qna:
         for _ in range(len(answers), n_qna):
             question, answer = make_nothing()
@@ -101,7 +101,7 @@ def generate_qnas_in_group_sync(summary_list):
         questions_list.extend(questions)
         answers_list.extend(answers)
     
-    return questions, answers
+    return questions_list, answers_list
 
 
 def questionize(summary_list):
