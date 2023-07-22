@@ -38,8 +38,8 @@ export function Rec( { historyId } ) {
         width: "700px", height: "800px", backgroundColor: 'white', margin: "0 auto", textAlign: "center", paddingTop: "20px", marginTop: "30px", borderRadius: "10px", boxShadow: "5px 5px 10px gray"
       } }>
         <p class="font-extrabold text-rec text-xl"><em>
-          { title }</em> </p>
-        { transcription ? transcription : <Spinner /> }
+        </em> </p>
+        { transcription ? <div className="flex flex-col w-full transition-colors py-3 px-3 items-center gap-3 relative rounded-md cursor-pointer break-all pr-[4.5rem] )} )} hover:bg-gray-200 border group animate-flash">{ transcription }</div> : <Spinner /> }
       </div>
 
     </div >
