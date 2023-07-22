@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { tokenExpiration } from "../utils/Logout";
 
 function Login() {
   const [ userName, setUserName ] = useState( '' );
@@ -27,6 +28,9 @@ function Login() {
         navigate( path, { state: { userName: id } } );
       }
       else {
+        if ( tokenExpiration( result.message ) ) {
+          navigate( '/' )
+        }
         console.log( result.message )
       }
 

@@ -2,11 +2,13 @@ import { useState, useEffect } from "react"
 import PropTypes from "prop-types";
 import axios from "axios";
 import cookie from 'react-cookies'
+import { tokenExpiration } from "../utils/Logout";
+import { useNavigate } from "react-router-dom";
 import Del from "./Del"
 
 const History = ( { isActive, id, history, onClickHistory } ) => {
   const [ del, setDel ] = useState( false );
-
+  const navigate = useNavigate()
   const accessToken = cookie.load( 'user' ).accessToken
   const historyID = id
   const onClick = () => {
@@ -26,6 +28,9 @@ const History = ( { isActive, id, history, onClickHistory } ) => {
       const result = res.data
       if ( result.type ) { console.log( "Delete Success!" ); setDel( true ); }
       else {
+        if ( tokenExpiration( result.message ) ) {
+          navigate( '/' )
+        }
         console.log( result.message )
       }
 

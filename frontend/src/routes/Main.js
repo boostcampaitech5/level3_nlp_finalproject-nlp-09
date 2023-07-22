@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import cookie from 'react-cookies'
 import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import MainLayout from "../components/MainLayout"
 import MainContent from "../components/MainContent";
+import { tokenExpiration } from "../utils/Logout";
 
 function Main() {
   const [ histories, setHistories ] = useState( null );
   const [ selectedId, setSelectedId ] = useState( null );
-
+  const navigate = useNavigate()
   const userNameCookie = cookie.load( 'user' ).userName
   const accessToken = cookie.load( 'user' ).accessToken
   const uploadState = useLocation().state
@@ -43,6 +44,10 @@ function Main() {
             setHistories( result.history_list )
           }
           else {
+            if ( tokenExpiration( result.message ) ) {
+              console.log( "!!!!" )
+            }
+            navigate( '/' )
             console.log( result.message )
           }
         }

@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios";
 import { useState } from "react";
 import cookie from 'react-cookies'
+import { tokenExpiration } from "../utils/Logout";
 
 function Password() {
   const location = useLocation();
@@ -37,6 +38,9 @@ function Password() {
         navigate( path );
       }
       else {
+        if ( tokenExpiration( result.message ) ) {
+          navigate( '/' )
+        }
         console.log( result.message )
       }
 

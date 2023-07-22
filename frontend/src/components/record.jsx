@@ -2,11 +2,14 @@ import Spinner from "./Spinner";
 import axios from "axios";
 import cookie from 'react-cookies'
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { tokenExpiration } from "../utils/Logout";
 
 const title = "Record";
 
 export function Rec( { historyId } ) {
   const [ transcription, setTranscription ] = useState( null )
+  const navigate = useNavigate()
   const body = {
     access_token: cookie.load( 'user' ).accessToken,
     history_id: historyId
@@ -16,7 +19,11 @@ export function Rec( { historyId } ) {
       console.log( res.data );
       const result = res.data
       if ( result.type ) { setTranscription( result.transcription ) }
-      else { console.log( result.message ) }
+      else {
+        if ( tokenExpiration( result.message ) ) {
+          navigate( '/' )
+        }; console.log( result.message )
+      }
 
     } ).catch( error => {
       // 요청 중 에러가 발생했을 때 처리

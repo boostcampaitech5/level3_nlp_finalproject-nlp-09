@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import axios from 'axios';
 import cookie from 'react-cookies'
 import { useNavigate } from 'react-router-dom';
+import { tokenExpiration } from "../utils/Logout";
 
 const Upload = ( { onUpload } ) => {
   // a local state to store the currently selected file.
@@ -25,6 +26,9 @@ const Upload = ( { onUpload } ) => {
       } );
       console.log( "Upload data", response.data )
       const result = response.data;
+      if ( tokenExpiration( result.message ) ) {
+        navigate( '/' )
+      }
       onUpload( result.history.history_id )
 
     } catch ( error ) {

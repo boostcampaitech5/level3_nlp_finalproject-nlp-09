@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios";
 import { useState } from "react";
+import { tokenExpiration } from "../utils/Logout";
 
 function SignUpPassword() {
   const location = useLocation();
@@ -30,6 +31,9 @@ function SignUpPassword() {
         navigate( path, { state: { userName: userInfo.userName, userPassword: password } } );
       }
       else {
+        if ( tokenExpiration( result.message ) ) {
+          navigate( '/' )
+        }
         console.log( result.message )
       }
 
