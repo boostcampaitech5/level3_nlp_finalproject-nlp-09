@@ -289,7 +289,7 @@ async def get_summary(request: Body, db: Session = Depends(get_db)):
     history = get_history_by_id(db, request.history_id)
     if history == None:
         return {"type": False, "message": "invalid history id"}
-    if history.transcription == "loading":
+    if history.summary == "loading":
         return {"type": False, "message": "loading"}
     return {"type": True, "message": "valid history id", "summary": history.summary}
 
@@ -320,6 +320,9 @@ async def get_qnas(request: Body, db: Session = Depends(get_db)):
     for qna in qnas:
         qna_list.append({"qna_id": qna.qna_id,
                          "question": qna.question, "answer": qna.answer})
+    if len(qna_list) == 0:
+        return {"type": False, "message": "loading"}
+
     return {"type": True, "message": "valid qna id", "qnas": qna_list}
 
 
