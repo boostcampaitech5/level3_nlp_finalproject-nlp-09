@@ -1,11 +1,11 @@
-import axios from "axios"
+import coockie from 'react-cookies'
 import { useNavigate } from "react-router-dom"
 
 const Logout = () => {
   const navigate = useNavigate()
   const onClickLogout = () => {
     console.log( "LOGOUT" )
-    // TODO: axios
+    coockie.remove( 'user' )
     navigate( '/' )
   }
   return (
