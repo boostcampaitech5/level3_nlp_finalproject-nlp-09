@@ -56,9 +56,13 @@ def text_to_pdf(is_exported: Dict, history: History, db: Session = Depends(get_d
     if is_exported['qnas']:
         qnas = get_qnas_by_history_id(db, history.history_id)
         md_qnas = "\n\n" + "## 퀴즈"
-        for qna_number, qna in enumerate(qnas):
-            md_qna = f"### 퀴즈 {qna_number+1}.\nQ. {qna.question}\nA. {qna.answer}"
-            md_qnas += "\n" + md_qna
+        qna_number = 1
+        for qna in qnas:
+            if qna.question == '<no_question>':
+                continue
+            md_qna = f"### 퀴즈 {qna_number}.\n\nQ. {qna.question}\n\nA. {qna.answer}"
+            md_qnas += "\n\n" + md_qna
+            qna_number += 1
         md_contents += md_qnas
 
     md_text = md_title + md_contents
