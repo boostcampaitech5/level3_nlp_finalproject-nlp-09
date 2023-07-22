@@ -32,7 +32,6 @@ const Upload = ( { onUpload } ) => {
 
     }
 
-    navigate( '/main', { state: true } )
   }
 
   const handleFileSelect = ( event ) => {
