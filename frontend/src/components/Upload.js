@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { tokenExpiration } from "../utils/Logout";
 import Loading from './Loading';
 
-const Upload = ( { onUpload, onWhich } ) => {
+const Upload = ( { onUpload } ) => {
   // a local state to store the currently selected file.
   const [ selectedFile, setSelectedFile ] = React.useState( null );
   const [ isFileUpload, setIsFileUpload ] = React.useState( false );
@@ -43,7 +43,6 @@ const Upload = ( { onUpload, onWhich } ) => {
 
   const handleFileSelect = ( event ) => {
     if ( event.target.files[ 0 ] ) {
-      onWhich( 2 )
       setSelectedFile( event.target.files[ 0 ] )
       console.log( event.target.files[ 0 ] )
       setFileName( event.target.files[ 0 ][ 'name' ] )
