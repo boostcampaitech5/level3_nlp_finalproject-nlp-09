@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import React, { Component } from 'react';
 
 
-function MainContent() {
+function MainContent( { selectedId } ) {
   return (
     <div className="container overflow-y-scroll " >
       <div className="title" style={ { backgroundColor: 'white', width: "100%", height: "100%", textAlign: "left", paddingLeft: "45px", paddingTop: "50px" } }>
@@ -26,10 +26,10 @@ function MainContent() {
         <p class="font-extrabold text-white text-lg"><em>문제</em></p></Link>
       <div className="item" style={ { backgroundColor: 'white', color: "black", width: "95%", height: "100%", paddingBottom: "30px" } }>
         <Routes>
-          <Route path="/" element={ <Rec /> } />
-          <Route path="/record" element={ <Rec /> } />
-          <Route path="/summary" element={ <Summ /> } />
-          <Route path="/question" element={ <Ques /> } />
+          <Route path="/" element={ <Rec historyId={ selectedId } /> } />
+          <Route path="/record" element={ <Rec historyId={ selectedId } /> } />
+          <Route path="/summary" element={ <Summ historyId={ selectedId } /> } />
+          <Route path="/question" element={ <Ques historyId={ selectedId } /> } />
         </Routes>
       </div>
 

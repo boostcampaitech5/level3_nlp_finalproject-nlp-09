@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import Logout from "./Logout";
 import History from "./History";
 
-const Sidebar = ( { historyList } ) => {
+const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => {
   console.log( "IM historylist", historyList )
   const [ isButtonHidden, setIsButtonHidden ] = useState( true );
   const [ isSetting, setIsSetting ] = useState( false );
@@ -17,14 +17,19 @@ const Sidebar = ( { historyList } ) => {
       setUserName( cookie.load( 'user' ).userName )
       setHistories( historyList )
     }, [ userName, historyList ] )
+
   const onClickSetting = () => {
     setIsSetting( ( bool ) => !bool )
   }
   const onClickBar = () => {
     setIsButtonHidden( ( bool ) => !bool )
   }
-  const onClickNote = () => {
+  const onClickNewNote = () => {
     navigate( '/main' )
+    onClickNote();
+  }
+  const handleClickHistory = ( id ) => {
+    onClickHistory( id );
   }
   return (
     <>
@@ -44,7 +49,7 @@ const Sidebar = ( { historyList } ) => {
               >
                 <div className="mb-1 flex flex-row gap-3">
 
-                  <button onClick={ onClickNote } className="flex p-3 items-center gap-3 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border border-white/20 hover:bg-gray-500/10 h-11 flex-shrink-0 flex-grow">
+                  <button onClick={ onClickNewNote } className="flex p-3 items-center gap-3 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border border-white/20 hover:bg-gray-500/10 h-11 flex-shrink-0 flex-grow">
                     <svg
                       stroke="currentColor"
                       fill="none"
@@ -98,14 +103,19 @@ const Sidebar = ( { historyList } ) => {
                           </h3>
                         </div>
                         <div>
-                          { histories ? histories.map( ( history ) => (
-                            <History
-                              key={ history.history_id }
-                              id={ history.history_id }
-                              history={ history.title }
-                            />
+                          { histories ? histories
+                            .slice()
+                            .sort( ( a, b ) => b.history_id - a.history_id )
+                            .map( ( history ) => (
+                              <History
+                                key={ history.history_id }
+                                id={ history.history_id }
+                                history={ history.title }
+                                onClickHistory={ handleClickHistory }
+                                isActive={ selectedId === history.history_id }
+                              />
 
-                          ) ) : null }
+                            ) ) : null }
                         </div>
 
                       </span>

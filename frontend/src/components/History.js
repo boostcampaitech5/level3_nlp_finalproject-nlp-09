@@ -4,8 +4,7 @@ import axios from "axios";
 import cookie from 'react-cookies'
 import Del from "./Del"
 
-const History = ( { id, history } ) => {
-  const [ isClicked, setIsClicked ] = useState( false );
+const History = ( { isActive, id, history, onClickHistory } ) => {
   const [ del, setDel ] = useState( false );
 
   const accessToken = cookie.load( 'user' ).accessToken
@@ -13,7 +12,8 @@ const History = ( { id, history } ) => {
   const onClick = () => {
     console.log( "Clicked" );
     console.log( id );
-    setIsClicked( ( bool ) => ( !bool ) );
+    onClickHistory( historyID )
+    console.log( "historyID", historyID )
   }
   const onClickDel = () => {
     console.log( "DEL" )
@@ -62,7 +62,7 @@ const History = ( { id, history } ) => {
 
           </button>
 
-          { isClicked ? (
+          { isActive ? (
             <button onClick={ onClickDel } className="p-1 hover:text-white">
               <svg
                 stroke="currentColor"

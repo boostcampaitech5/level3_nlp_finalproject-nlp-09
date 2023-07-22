@@ -3,7 +3,7 @@ import axios from 'axios';
 import cookie from 'react-cookies'
 import { useNavigate } from 'react-router-dom';
 
-const Form = () => {
+const Upload = ( { history } ) => {
   // a local state to store the currently selected file.
   const [ selectedFile, setSelectedFile ] = React.useState( null );
   const [ isFileUpload, setIsFileUpload ] = React.useState( false );
@@ -24,11 +24,12 @@ const Form = () => {
         headers: { "Content-Type": "multipart/form-data" },
       } );
       console.log( response.data )
+
     } catch ( error ) {
       console.log( error )
 
-
     }
+
     navigate( '/main', { state: true } )
   }
 
@@ -58,4 +59,4 @@ const Form = () => {
   )
 };
 
-export default Form;
+export default Upload;
