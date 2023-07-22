@@ -16,6 +16,7 @@ export function Summ( { historyId } ) {
       access_token: cookie.load( 'user' ).accessToken,
       history_id: historyId
     }
+    setSummary( null )
     axios.post( "http://localhost:8000/history/summary", body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data

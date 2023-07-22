@@ -9,6 +9,7 @@ const title = "Record";
 
 export function Rec( { historyId } ) {
   const [ transcription, setTranscription ] = useState( null )
+
   const navigate = useNavigate()
   const body = {
     access_token: cookie.load( 'user' ).accessToken,

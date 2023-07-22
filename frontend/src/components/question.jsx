@@ -17,6 +17,7 @@ export function Ques( { historyId } ) {
       access_token: cookie.load( 'user' ).accessToken,
       history_id: historyId
     }
+    setQNAList( null )
     axios.post( "http://localhost:8000/history/qna", body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
