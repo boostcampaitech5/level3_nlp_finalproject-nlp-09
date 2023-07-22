@@ -5,11 +5,11 @@ import { useState } from "react";
 
 const title = "Summary";
 
-export function Summ() {
+export function Summ( { historyId } ) {
   const [ summary, setSummary ] = useState( null )
   const body = {
     access_token: cookie.load( 'user' ).accessToken,
-    history_id: 1
+    history_id: historyId
   }
   axios.post( "http://localhost:8000/history/summary", body ).then( ( res ) => {
     console.log( res.data );

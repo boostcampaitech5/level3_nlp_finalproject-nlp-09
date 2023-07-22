@@ -7,12 +7,12 @@ const title = "Question";
 // const answer = "naver_boost_camp_answer";
 
 
-export function Ques() {
-  const [ qnaList, setQNAList ] = useState( [] );
+export function Ques( { historyId } ) {
+  const [ qnaList, setQNAList ] = useState( null );
 
   const body = {
     access_token: cookie.load( 'user' ).accessToken,
-    history_id: 1
+    history_id: historyId
   }
   useEffect( () => {
     axios.post( "http://localhost:8000/history/qna", body ).then( ( res ) => {
