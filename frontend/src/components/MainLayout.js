@@ -1,6 +1,8 @@
-import Main from "../routes/Main"
 import Upload from "./Upload"
-const MainLayout = () => {
+const MainLayout = ( { onUpload } ) => {
+  const handleUpload = ( id ) => {
+    onUpload( id )
+  }
   return (
     <div className="relative flex h-full max-w-full flex-1 overflow-hidden">
       <div className="flex h-full max-w-full flex-1 flex-col">
@@ -133,7 +135,7 @@ const MainLayout = () => {
           </div>
 
           <div className="flex flex-row gap-2 justify-center" style={ { position: "relative", top: "-100px" } }>
-            <Upload />
+            <Upload onUpload={ handleUpload } />
           </div>
 
         </main>
