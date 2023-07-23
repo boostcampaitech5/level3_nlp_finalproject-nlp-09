@@ -11,6 +11,18 @@ const RETRY_DELAY_MS = 2000; // 2초 간격으로 재시도
 export function Summ( { historyId } ) {
   const [ summary, setSummary ] = useState( null )
   const navigate = useNavigate();
+  const updateParentSize = () => {
+    const childDiv = document.getElementById( 'childDiv' );
+    if ( childDiv ) {
+      const childHeight = childDiv.clientHeight;
+      const parentDiv = document.getElementById( 'parentDiv' );
+      parentDiv.style.height = `${0.30 * childHeight}%`;
+    }
+  };
+  useEffect( () => {
+    // transcription이 변경될 때마다 상위 div 크기 업데이트
+    updateParentSize();
+  }, [ summary ] );
   const fetchData = () => {
     const body = {
       access_token: cookie.load( 'user' ).accessToken,
@@ -35,15 +47,15 @@ export function Summ( { historyId } ) {
   useEffect( () => { fetchData() }, [ historyId ] )
 
   return (
-    <div style={ {
+    <div id="parentDiv" style={ {
       backgroundColor: '#FFA831', color: "black", width: "100%", height: "100%", position: "relative", paddingTop: "40px", borderRadius: "15px", boxShadow: "10px 10px 5px gray"
     } }>
-      < div style={ {
-        width: "700px", height: "800px", backgroundColor: 'white', margin: "0 auto", textAlign: "center", paddingTop: "20px", marginTop: "30px", borderRadius: "10px", boxShadow: "5px 5px 10px gray"
+      < div id="parentDiv" style={ {
+        width: "90%", height: "80%", backgroundColor: 'white', margin: "0 auto", textAlign: "center", paddingTop: "20px", marginTop: "30px", borderRadius: "10px", boxShadow: "5px 5px 10px gray"
       } }>
 
         <p class="font-extrabold text-summ text-xl"><em></em></p>
-        { summary ? <div className="flex flex-col w-full transition-colors py-3 px-3 items-center gap-3 relative rounded-md cursor-pointer break-all pr-[4.5rem] )} )} hover:bg-gray-200 border group animate-flash">{ summary }</div> : <Spinner /> }
+        { summary ? <div id="childDiv" className="flex flex-col w-full transition-colors py-3 px-3 items-center gap-3 relative rounded-md cursor-pointer break-all pr-[4.5rem] )} )} hover:bg-gray-200 border group animate-flash">{ summary }</div> : <Spinner /> }
       </div >
     </div >
   );
