@@ -145,11 +145,12 @@ def summarize(transcription):
     data = sentence_grouper.split_text_into_sentences(transcription)
     grouped_data = sentence_grouper.grouping(data)
 
-    # 원본 -> re_grouping 미사용
+    # # 원본 -> re_grouping 미사용
     # raw_summary = text_summarizer.inference_group(grouped_data)
     # summary_list = text_summarizer.post_processing(raw_summary)
     # summary = '- ' + '\n\n- '.join(summary_list)
 
+    # re_grouping 사용
     regrouped_data = sentence_grouper.re_grouping(grouped_data)
     summary_list = []
     
@@ -205,8 +206,8 @@ def main():
         자살 사고를 설명하는 분량만큼을 통제를 하게 되니까 요만큼의 분량이 빠지게 되겠죠. 그러니까 그렇게 되면 요만큼의 분량을 뺀 값이 이제 C2가 될 건데 요 C2는
         그러면 어떻게 되겠어요. 그만큼 빠진 거니까 줄어들겠죠. C보다 그래서 유의미하게 줄어드는 거를 우리가 확인을 해주면 되겠습니다."""
     
-    summary, su = summarize(transcription)
-    print(su)
+    summary_list, summary = summarize(transcription)
+    print(summary)
     
 if __name__ == "__main__":
     main()
