@@ -1,36 +1,42 @@
 import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios";
-import { useState } from "react";
 
 function SignUpPassword() {
   const location = useLocation();
   const userInfo = location.state;
-  const [ password, setPassword ] = useState( '' )
   let navigate = useNavigate();
 
   const onSubmit = ( event ) => {
     event.preventDefault()
-    const password = event.target[ 2 ].value;
+    console.log( event )
+    const password = event.target[ 4 ].value;
     if ( password === "" ) {
       <div>invalid</div>
     }
-    setPassword( password );
+
     console.log( "Password", password )
     let body = {
-      id: userInfo.userName,
-      password: { password }
+      user_id: userInfo.userName,
+      password: password
     }
+    console.log( "password", password )
+    axios.post( "http://localhost:8000/signup", body ).then( ( res ) => {
+      console.log( res.data )
+      const result = res.data
 
-    axios.get( "https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=d06d80ad6cf936fc07f5161a6da43e63" ).then( ( res ) => {
-      console.log( res.data.code )
+      if ( result.type ) {
+        let path = '/auth/login';
+        navigate( path, { state: { userName: userInfo.userName, userPassword: password } } );
+      }
+      else {
+        console.log( result.message )
+      }
+
     } ).catch( error => {
       // 요청 중 에러가 발생했을 때 처리
       console.error( error );
     } );
-    if ( password ) {
-      let path = '/main';
-      navigate( path, { state: { userName: userInfo.userName, userPassword: password } } );
-    }
+
   }
   return (
     <div style={ { alignItems: 'center', justifyContent: 'center', display: 'flex', height: "100vh" } }>
