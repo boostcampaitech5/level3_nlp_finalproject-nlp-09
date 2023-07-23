@@ -56,13 +56,12 @@ def text_to_pdf(is_exported: Dict, history: History, db: Session = Depends(get_d
     if is_exported['qnas']:
         qnas = get_qnas_by_history_id(db, history.history_id)
         md_qnas = "\n\n" + "## 퀴즈"
-        qna_number = 1
-        for qna in qnas:
-            if qna.question == '<no_question>':
-                continue
-            md_qna = f"### 퀴즈 {qna_number}.\n\nQ. {qna.question}\n\nA. {qna.answer}"
-            md_qnas += "\n\n" + md_qna
-            qna_number += 1
+        if qnas:
+            for qna_number, qna in enumerate(qnas):
+                md_qna = f"### 퀴즈 {qna_number+1}.\n\nQ. {qna.question}\n\nA. {qna.answer}"
+                md_qnas += "\n\n" + md_qna
+        else:
+            md_qnas += "\n\n" + "생성된 퀴즈가 없습니다.\n\n제공된 영상 또는 음성의 길이가 너무 짧지는 않은지 확인해주세요."
         md_contents += md_qnas
 
     md_text = md_title + md_contents
@@ -77,7 +76,7 @@ def text_to_pdf(is_exported: Dict, history: History, db: Session = Depends(get_d
 
 def main():
     import schemas
-    from crud import create_user_history, create_qna, delete_user_history, delete_history_qna
+    from crud import create_user_history, create_qna, delete_user_history, delete_history_qna, get_history_by_id
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
 
@@ -96,9 +95,13 @@ def main():
     )
     test_qna = create_qna(db, test_qna)
 
-    content_types = ['transcription', 'summary', 'qnas']
+    is_exported = {
+        'transcription' : False, 
+        'summary': True,
+        'qnas': True
+        }
     text_to_pdf(
-        content_types=content_types,
+        is_exported=is_exported,
         history=test_history,
         db=db
     )
