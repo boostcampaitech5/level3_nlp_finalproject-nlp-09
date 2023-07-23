@@ -56,7 +56,7 @@ export function Summ( { historyId } ) {
 
         <p class="font-extrabold text-summ text-xl"><em></em></p>
         { summaryList ? <div id="childDiv" className="flex flex-col w-full transition-colors py-3 px-3 items-center gap-3 relative rounded-md cursor-pointer break-all pr-[4.5rem] )} )} hover:bg-gray-200 border group animate-flash">
-          <div className="text-left">{ summaryList.map( ( summary ) => ( <li >{ summary }</li> ) ) }</div>
+          <ul className="text-left">{ summaryList.map( ( summary ) => ( <li >{ summary }<br /></li> ) ) }</ul>
         </div> : <Spinner /> }
       </div >
     </div >
