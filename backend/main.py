@@ -3,14 +3,14 @@ import tempfile
 import shutil
 import os
 import sys
-from typing import Union
+from typing import Union, List
 import asyncio
 import time
 
 from pydantic import BaseModel
 from fastapi import FastAPI, Depends, HTTPException, Form, File, UploadFile, Request, Response, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -25,12 +25,13 @@ from dependency import *
 from sqlalchemy.orm import Session
 
 # audio_processing
-sys.path.append('./')  # nopep8
-sys.path.append('./ml_functions')  # nopep8
 from ml_functions.stt import transcribe, transcribe_async, transcribe_test
 from ml_functions.summary import summarize, summarize_async, summarize_test
 from ml_functions.qna import questionize, questionize_async, questionize_test
 import pytube
+
+# pdf export
+from pdf_export.convert_pdf import text_to_pdf
 
 # login
 from login import get_current_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -154,6 +155,8 @@ def background_summary_and_qna_task(transcription, db, new_history):
         change_history_summary_async(db, new_history, summary))
     questions, answers = asyncio.run(questionize_async(summary_list))
     for question, answer in zip(questions, answers):
+        if question == '<no_question>' or answer == '<no_answer>':
+            continue
         temp_qna = schemas.QnA(
             question=question, answer=answer, history_id=new_history.history_id
         )
@@ -350,6 +353,23 @@ async def change_qna(request: Body, db: Session = Depends(get_db)):
     qna = get_qna_by_id(db, request.qna_id)
     change_history_qna(db, qna, request.question, request.answer)
     return {"type": True, "message": "change success"}
+
+
+@app.post("/history/export_pdf")
+async def export_pdf(history_id: int, ex_trans: bool = True, ex_summ: bool = True, ex_qna: bool = True, access_token: str = Form(...), db: Session = Depends(get_db)):
+    info = get_current_user(access_token)
+    if info["message"] != "Valid":
+        return {"type": False, "message": info["message"]}
+    
+    history = get_history_by_id(db, history_id)
+    is_exported = {
+        'transcription' : ex_trans, 
+        'summary': ex_summ,
+        'qnas': ex_qna
+        }
+    pdf_filepath, pdf_filename = text_to_pdf(is_exported=is_exported, history=history, db=db)
+
+    return StreamingResponse(open(pdf_filepath, "rb"), headers={"Content-Disposition": f"attachment; filename={pdf_filename}"})
 
 
 if __name__ == "__main__":
