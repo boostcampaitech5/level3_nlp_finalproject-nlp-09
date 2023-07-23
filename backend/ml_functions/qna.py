@@ -67,7 +67,7 @@ def qna_postprocess(generated_qnas, n_qna=3):
 
         except ValueError:
             continue
-
+    
     if len(answers) < n_qna:
         for _ in range(len(answers), n_qna):
             question, answer = make_nothing()
