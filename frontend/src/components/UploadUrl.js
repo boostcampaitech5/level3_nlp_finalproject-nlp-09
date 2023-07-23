@@ -59,17 +59,17 @@ const UploadUrl = ( { onUpload } ) => {
 
             { isFileUpload ? <span class="flex flex-row justify-center">{ text }</span> : null }
             <form onSubmit={ handleSubmit } className='flex flex-row gap-2 itmes-center'>
-              <div className="flex flex-row justify-center">
-                { isFileUpload ? null :
-                  <div className="flex flex-row justify-center" >
-                    <input type="text" onChange={ onChange } value={ text } placeholder="Put your audio link" className="flex w-full gap-2 bg-white-600 hover:bg-white-800 relative text-black py-2.5 px-20 sm:px-80 rounded border-3 border-slate-500 text-center" />
-                    <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-1 px-3 rounded" >Upload</button>
-                  </div>
-                }
-              </div>
 
-              { isFileUpload ? <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" >Reupload</button> : null }
-              { isFileUpload ? <button class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" type="submit">GO</button> : null }
+              { isFileUpload ? null :
+                <div className="flex flex-row justify-center" >
+                  <input type="text" onChange={ onChange } value={ text } placeholder="Put your audio link" className="flex w-full gap-2 bg-white-600 hover:bg-white-800 relative text-black py-2.5 px-20 sm:px-80 rounded border-3 border-slate-500 text-center" />
+                  <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-1 px-3 rounded" >Upload</button>
+                </div>
+              }
+              { isFileUpload ? <div className="flex w-full flex-row justify-center gap-2">
+                <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" >Reupload</button>
+                <button class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" type="submit">GO</button>
+              </div> : null }
 
 
             </form>
