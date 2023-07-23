@@ -291,7 +291,9 @@ async def get_summary(request: Body, db: Session = Depends(get_db)):
         return {"type": False, "message": "invalid history id"}
     if history.summary == "loading":
         return {"type": False, "message": "loading"}
-    return {"type": True, "message": "valid history id", "summary": history.summary}
+
+    split_summary = history.summary.split("\n")
+    return {"type": True, "message": "valid history id", "summary": split_summary}
 
 
 # 요약본 수정
