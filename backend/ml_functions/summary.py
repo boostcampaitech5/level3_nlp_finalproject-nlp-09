@@ -22,11 +22,7 @@ class SentenceGrouper:
     def split_text_into_sentences(self, text):
         sentences = self.tokenizer.tokenize(text)
         return sentences
-
-    def read_text(self, path):
-        with open(path, "r", encoding="utf-8-sig") as f:
-            text = f.read()
-        return text
+    
 
     def _calculate_cosine_similarity(self, vector1, vector2):
         vector1 = vector1.reshape(1, -1)
@@ -34,7 +30,7 @@ class SentenceGrouper:
         similarity = cosine_similarity(vector1, vector2)
         return similarity
 
-    def grouping(self, sentences, length_threshold=30, similarity_threshold_for_short=0.2, similarity_threshold_for_long=0.3):
+    def grouping(self, sentences, length_threshold=30, similarity_threshold_for_short=0.2, similarity_threshold_for_long=0.3, length_threshold_for_paragraph=50):
         stack = []
 
         for sentence in tqdm(sentences):
@@ -63,9 +59,36 @@ class SentenceGrouper:
                 stack[-1] += ' ' + current_sentence
             else:
                 stack.append(current_sentence)
-
-        return stack
+                
+        filtered_stack = [i for i in stack if len(i) >= length_threshold_for_paragraph]  # 의미 없다고 판단되는 문단 filtering
     
+        return filtered_stack
+
+    
+    def re_grouping(self, filtered_list, paragraph_group_num: int = 2, paragraph_sentence_num: int = 2):
+    
+        def split_paragraph(sentences, sentences_num, isGrouping):
+            temp = []
+            split_num = len(sentences) // sentences_num if isGrouping else sentences_num
+            sentences_num = sentences_num if isGrouping else len(sentences) // sentences_num
+            
+            for i in range(0, split_num):
+                if i == split_num - 1:
+                    temp.append(' '.join(sentences[i*sentences_num : ]))
+                else:
+                    temp.append(' '.join(sentences[i*sentences_num : (i+1)*sentences_num]))
+            
+            return temp
+            
+        grouping_paragraph = split_paragraph(filtered_list, paragraph_group_num, True)
+        total_paragraph = []
+        
+        for group in grouping_paragraph:
+            group = self.split_text_into_sentences(group)
+            total_paragraph.append(split_paragraph(group, paragraph_sentence_num, False))
+
+        return total_paragraph
+        
 
 class TextSummarizer:
     def __init__(self, model_name="junsun10/mt5-base-kor-paper-summary"):
@@ -79,6 +102,7 @@ class TextSummarizer:
         summary = []
         for i in tqdm(data):
             input_text = i + "\n요약: "
+            # input_text = i  # if use lcw99 model
             input_ids = self.tokenizer.encode(input_text, return_tensors="pt").to(self.device)
             translated = self.model.generate(
                 input_ids=input_ids,
@@ -89,6 +113,7 @@ class TextSummarizer:
             translated_text = self.tokenizer.decode(
                 translated[0], skip_special_tokens=True)
             summary.append(translated_text[12:].strip())
+            # summary.append(translated_text)  # if use lcw99 model
 
         return summary
 
@@ -97,17 +122,16 @@ class TextSummarizer:
         for i in summary:
             if len(i) < 6:
                 continue
+            
             if i[0] == "." or i[0] == ",":
                 i = i[1:].strip()
-            if i[:3] == "요약:":
-                i = i[3:].strip()
+                
+            if i.strip()[:4] == "요약 :" or i.strip()[:3] == "요약:":
+                i = i[4:].strip() if i.strip()[:4] == "요약 :" else i[3:].strip()
+                
             new_summary.append(i)
+            
         return new_summary
-
-    def save_summary(self, summary, path):
-        with open(path, "w", encoding="utf-8-sig") as f:
-            for i in summary:
-                f.write(i + "\n")
 
 
 def set_summary_inference():
@@ -120,9 +144,15 @@ def summarize(transcription):
     sentence_grouper, text_summarizer = set_summary_inference()
     data = sentence_grouper.split_text_into_sentences(transcription)
     grouped_data = sentence_grouper.grouping(data)
-    raw_summary = text_summarizer.inference_group(grouped_data)
-    summary_list = text_summarizer.post_processing(raw_summary)
+    regrouped_data = sentence_grouper.re_grouping(grouped_data)
+    summary_list = []
+    
+    for paragraph in regrouped_data:
+        raw_summary = text_summarizer.inference_group(paragraph)
+        summary_list.append(' '.join(text_summarizer.post_processing(raw_summary)))
+        
     summary = '\n'.join(summary_list)
+    
     return summary_list, summary
 
 
@@ -168,8 +198,8 @@ def main():
         자살 사고를 설명하는 분량만큼을 통제를 하게 되니까 요만큼의 분량이 빠지게 되겠죠. 그러니까 그렇게 되면 요만큼의 분량을 뺀 값이 이제 C2가 될 건데 요 C2는
         그러면 어떻게 되겠어요. 그만큼 빠진 거니까 줄어들겠죠. C보다 그래서 유의미하게 줄어드는 거를 우리가 확인을 해주면 되겠습니다."""
     
-    summary = summarize(transcription)
-    pprint(summary)
-
+    summary, su = summarize(transcription)
+    print(su)
+    
 if __name__ == "__main__":
     main()
