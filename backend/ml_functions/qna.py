@@ -67,7 +67,7 @@ def qna_postprocess(generated_qnas, n_qna=3):
 
         except ValueError:
             continue
-
+    
     if len(answers) < n_qna:
         for _ in range(len(answers), n_qna):
             question, answer = make_nothing()
@@ -98,8 +98,11 @@ def generate_qnas_in_group_sync(summary_list):
     for summary in tqdm(summary_list): # summary_list가 짧은 문장들로 구성되지 않은 경우 summary_group을 summary_list로 변경 가능
         generated_qnas = generate_n_beams_qnas(summary, tokenizer, model, device, n_beams=10)
         questions, answers = qna_postprocess(generated_qnas)
-        questions_list.extend(questions)
-        answers_list.extend(answers)
+        for question, answer in zip(questions, answers):
+            if question == '<no_question>' or answer == '<no_answer>':
+                continue
+            questions_list.append(question)
+            answers_list.append(answer)
     
     return questions_list, answers_list
 
