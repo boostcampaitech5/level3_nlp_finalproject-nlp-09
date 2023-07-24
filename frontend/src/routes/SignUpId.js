@@ -130,7 +130,7 @@ function SignUpId() {
                                 data-alternate-action-text=""
                               >
                                 <label className="c8db587cf no-js ce86485cd c5298ae24" htmlFor="email">
-                                  Email address
+                                  Id
                                 </label>
                                 <input
                                   className="input ca4b7f6ee c853886b0"
@@ -150,7 +150,7 @@ function SignUpId() {
                                   data-dynamic-label-for="email"
                                   aria-hidden="false"
                                 >
-                                  Email address
+                                  Id
                                 </div>
                               </div>
                             </div>
