@@ -244,7 +244,7 @@ async def delete_history(request: Body, db: Session = Depends(get_db)):
 
 
 # 타이틀 변경
-@app.post("/home/change_title")
+@app.post("/history/change_title")
 async def change_title(request: Body, db: Session = Depends(get_db)):
     info = get_current_user(request.access_token)
     if info["message"] != "Valid":
@@ -360,14 +360,15 @@ async def export_pdf(history_id: int, ex_trans: bool = True, ex_summ: bool = Tru
     info = get_current_user(access_token)
     if info["message"] != "Valid":
         return {"type": False, "message": info["message"]}
-    
+
     history = get_history_by_id(db, history_id)
     is_exported = {
-        'transcription' : ex_trans, 
+        'transcription': ex_trans,
         'summary': ex_summ,
         'qnas': ex_qna
-        }
-    pdf_filepath, pdf_filename = text_to_pdf(is_exported=is_exported, history=history, db=db)
+    }
+    pdf_filepath, pdf_filename = text_to_pdf(
+        is_exported=is_exported, history=history, db=db)
 
     return StreamingResponse(open(pdf_filepath, "rb"), headers={"Content-Disposition": f"attachment; filename={pdf_filename}"})
 
