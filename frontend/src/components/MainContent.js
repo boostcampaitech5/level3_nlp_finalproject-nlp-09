@@ -4,7 +4,7 @@ import Rec from "./record";
 import Summ from "./summary";
 import { Route, Routes } from 'react-router-dom';
 import { Link } from 'react-router-dom'
-import React, { Component, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { tokenExpiration } from "../utils/Logout";
 import axios from "axios";

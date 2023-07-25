@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import PropTypes from "prop-types";
 import axios from "axios";
 import cookie from 'react-cookies'
 import { tokenExpiration } from "../utils/Logout";
 import { useNavigate } from "react-router-dom";
-import Del from "./Del"
 
 const History = ( { isActive, id, history, onClickHistory } ) => {
   const [ editing, setEditing ] = useState( false );
