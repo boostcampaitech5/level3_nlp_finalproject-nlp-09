@@ -51,7 +51,9 @@ def text_to_pdf(is_exported: Dict, history: History, db: Session = Depends(get_d
         md_history = f"## 속기\n\n{history.transcription}"
         md_contents += "\n\n" + md_history
     if is_exported['summary']:
-        md_summary = f"## 요약\n\n{history.summary}"
+        summary_list = history.summary.split('\n')
+        summary_with_bullet = '- ' + '\n\n- '.join(summary_list)
+        md_summary = f"## 요약\n\n{summary_with_bullet}"
         md_contents += "\n\n" + md_summary
     if is_exported['qnas']:
         qnas = get_qnas_by_history_id(db, history.history_id)
