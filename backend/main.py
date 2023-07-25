@@ -42,8 +42,9 @@ app = FastAPI()
 templates = Jinja2Templates(directory="../src")
 
 origins = [
+    "http://lecnrec.kro.kr",
     "http://localhost:3000",
-    "localhost:3000"
+    "http://localhost:80"
 ]
 
 app.add_middleware(
