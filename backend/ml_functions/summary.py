@@ -158,8 +158,7 @@ def summarize(transcription):
         raw_summary = text_summarizer.inference_group(paragraph)
         summary_list.append(' '.join(text_summarizer.post_processing(raw_summary)))
         
-    # summary = '\n'.join(summary_list) 
-    summary = '- ' + '\n\n- '.join(summary_list) # 현재 PDF에서 요약의 MD bullet 형식 출력을 위해 수정했습니다.
+    summary = '\n'.join(summary_list) # 현재 PDF에서 요약의 MD bullet 형식 출력을 위해 수정했습니다.
     
     return summary_list, summary
 
