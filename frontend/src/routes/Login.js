@@ -119,7 +119,7 @@ function Login() {
                           <div className="cedacd3f9">
                             <div className="input-wrapper _input-wrapper">
                               <div
-                                className="ccf254d7e c86ee2179 text c49367bf9 c4f04ee33"
+                                className="c7ab7dc9b c0019dde8 text cf3b89ce0 cd6d391ac c1c5e48dd"
                                 data-action-text=""
                                 data-alternate-action-text=""
                               >
@@ -132,53 +132,19 @@ function Login() {
                                   type="text"
                                   defaultValue=""
                                   required=""
+                                  placeholder='Id'
                                   autoComplete="username"
                                   autoCapitalize="none"
                                   spellCheck="false"
-                                  autofocus=""
+
+
                                 />
-                                <div
-                                  className="c8db587cf js-required ce86485cd c4daf1f57"
-                                  data-dynamic-label-for="username"
-                                  aria-hidden="true"
-                                >
-                                  Id
-                                </div>
+
                               </div>
                             </div>
                           </div>
                         </div>
-                        <input
-                          className="hide"
-                          type="password"
-                          autoComplete="off"
-                          tabIndex={ -1 }
-                          aria-hidden="true"
-                        />
-                        <input
-                          type="hidden"
-                          id="js-available"
-                          name="js-available"
-                          defaultValue="true"
-                        />
-                        <input
-                          type="hidden"
-                          id="webauthn-available"
-                          name="webauthn-available"
-                          defaultValue="true"
-                        />
-                        <input
-                          type="hidden"
-                          id="is-brave"
-                          name="is-brave"
-                          defaultValue="false"
-                        />
-                        <input
-                          type="hidden"
-                          id="webauthn-platform-available"
-                          name="webauthn-platform-available"
-                          defaultValue="true"
-                        />
+
                         <div className="cf772ffae">
                           <button
                             type="submit"
@@ -247,11 +213,11 @@ function Login() {
           </section >
         </main >
         <footer className="oai-footer">
-          <a href="https://openai.com/policies/terms-of-use" target="_blank">
+          <a href="" target="_blank">
             Terms of use
           </a>{ " " }
           |{ " " }
-          <a href="https://openai.com/policies/privacy-policy" target="_blank">
+          <a href="" target="_blank">
             Privacy policy
           </a>
         </footer>

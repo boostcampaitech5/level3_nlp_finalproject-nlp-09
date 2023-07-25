@@ -125,19 +125,18 @@ function SignUpId() {
                           <div className="cedacd3f9">
                             <div className="input-wrapper _input-wrapper">
                               <div
-                                className="ccf254d7e c86ee2179 text c513f59bd c4f04ee33"
+                                className="c7ab7dc9b c0019dde8 text cf3b89ce0 cd6d391ac c1c5e48dd"
                                 data-action-text=""
                                 data-alternate-action-text=""
                               >
-                                <label className="c8db587cf no-js ce86485cd c5298ae24" htmlFor="email">
-                                  Id
-                                </label>
+
                                 <input
                                   className="input ca4b7f6ee c853886b0"
                                   inputMode="email"
                                   name="email"
                                   id="email"
                                   type="text"
+                                  placeholder="Id"
                                   defaultValue=""
                                   required=""
                                   autoComplete="username"
@@ -145,13 +144,7 @@ function SignUpId() {
                                   spellCheck="false"
                                   autoFocus=""
                                 />
-                                <div
-                                  className="c8db587cf js-required ce86485cd c5298ae24"
-                                  data-dynamic-label-for="email"
-                                  aria-hidden="false"
-                                >
-                                  Id
-                                </div>
+
                               </div>
                             </div>
 

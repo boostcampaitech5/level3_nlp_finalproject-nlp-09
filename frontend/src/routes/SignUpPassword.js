@@ -162,64 +162,20 @@ function SignUpPassword() {
                               data-action-text=""
                               data-alternate-action-text=""
                             >
-                              <label
-                                className="c8db587cf no-js ce86485cd c0e77cb7c"
-                                htmlFor="password"
-                              >
-                                Password
-                              </label>
+
                               <input
                                 className="input ca4b7f6ee c58cecd1f"
                                 name="password"
                                 id="password"
                                 type="password"
+                                placeholder="Password"
                                 required=""
                                 autoComplete="new-password"
                                 autoCapitalize="none"
                                 spellCheck="false"
                                 autofocus=""
                               />
-                              <div
-                                className="c8db587cf js-required ce86485cd c0e77cb7c"
-                                data-dynamic-label-for="password"
-                                aria-hidden="true"
-                              >
-                                Password
-                              </div>
-                              <button
-                                type="button"
-                                className="c89f1057d ulp-button-icon cfdf7e7ce _button-icon"
-                                data-action="toggle"
-                              >
-                                <span
-                                  aria-hidden="true"
-                                  className="password-icon-tooltip show-password-tooltip"
-                                >
-                                  Show password
-                                </span>
-                                <span
-                                  aria-hidden="true"
-                                  className="password-icon-tooltip hide-password-tooltip hide"
-                                >
-                                  Hide password
-                                </span>
-                                <span
-                                  className="screen-reader-only password-toggle-label"
-                                  data-label="show-password"
-                                >
-                                  Show password
-                                </span>
-                                <span
-                                  className="screen-reader-only password-toggle-label hide"
-                                  data-label="hide-password"
-                                >
-                                  Hide password
-                                </span>
-                                <span
-                                  className="cef71cdbc password js-required"
-                                  aria-hidden="true"
-                                />
-                              </button>
+
                             </div>
                           </div>
                         </div>
@@ -283,11 +239,11 @@ function SignUpPassword() {
           </section>
         </main>
         <footer className="oai-footer">
-          <a href="https://openai.com/policies/terms-of-use" target="_blank">
+          <a href="" target="_blank">
             Terms of use
           </a>{ " " }
           |{ " " }
-          <a href="https://openai.com/policies/privacy-policy" target="_blank">
+          <a href="" target="_blank">
             Privacy policy
           </a>
         </footer>
