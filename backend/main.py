@@ -70,6 +70,9 @@ class Body(BaseModel):
     summary: str = None
     question: str = None
     answer: str = None
+    ex_trans: bool = None
+    ex_summ: bool = None
+    ex_qna: bool = None
 
 
 # 로그인 검증 및 토큰 생성
@@ -361,24 +364,21 @@ async def change_qna(request: Body, db: Session = Depends(get_db)):
 
 
 @app.post("/history/export_pdf")
-async def export_pdf(request: Body, ex_trans: bool = True, ex_summ: bool = True, ex_qna: bool = True, db: Session = Depends(get_db)):
+async def export_pdf(request: Body, db: Session = Depends(get_db)):
     info = get_current_user(request.access_token)
     if info["message"] != "Valid":
         return {"type": False, "message": info["message"]}
 
     history = get_history_by_id(db, request.history_id)
     is_exported = {
-        'transcription': ex_trans,
-        'summary': ex_summ,
-        'qnas': ex_qna
+        'transcription': request.ex_trans,
+        'summary': request.ex_summ,
+        'qnas': request.ex_qna
     }
     pdf_filepath, pdf_filename = text_to_pdf(
         is_exported=is_exported, history=history, db=db)
 
-    return (
-        {"type": True, "message": "export success"}, 
-        StreamingResponse(open(pdf_filepath, "rb"), headers={"Content-Disposition": f"attachment; filename={pdf_filename}"})
-    )
+    return StreamingResponse(open(pdf_filepath, "rb"), headers={"Content-Disposition": f"attachment; filename={pdf_filename}"})
 
 
 if __name__ == "__main__":
