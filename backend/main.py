@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 
 # audio_processing
 from ml_functions.stt import transcribe, transcribe_async, transcribe_test
+from ml_functions.add_period import add_period
 from ml_functions.summary import summarize, summarize_async, summarize_test
 from ml_functions.qna import questionize, questionize_async, questionize_test
 import pytube
@@ -125,7 +126,9 @@ def transcription_task(audio, db, user_id):
     )
     new_history = create_user_history(db, new_history_with_title, user_id)
     transcription = transcribe(temp_audio.name)
-    new_history = change_history_transcription(db, new_history, transcription)
+    post_processed_transcription = add_period(transcription)
+    new_history = change_history_transcription(
+        db, new_history, post_processed_transcription)
 
     temp_audio.close()
     os.remove(temp_audio.name)
@@ -135,13 +138,14 @@ def transcription_task(audio, db, user_id):
 
 # link transcribe 실행
 def transcription_task_link(audio_name, db, user_id):
-
     new_history_with_title = schemas.History(
         title=audio_name, transcription="loading", summary="loading"
     )
     new_history = create_user_history(db, new_history_with_title, user_id)
     transcription = transcribe("./temp/"+audio_name)
-    new_history = change_history_transcription(db, new_history, transcription)
+    post_processed_transcription = add_period(transcription)
+    new_history = change_history_transcription(
+        db, new_history, post_processed_transcription)
 
     os.remove("./temp/"+audio_name)
 
@@ -356,12 +360,12 @@ async def change_qna(request: Body, db: Session = Depends(get_db)):
 
 
 @app.post("/history/export_pdf")
-async def export_pdf(history_id: int, ex_trans: bool = True, ex_summ: bool = True, ex_qna: bool = True, access_token: str = Form(...), db: Session = Depends(get_db)):
-    info = get_current_user(access_token)
+async def export_pdf(request: Body, ex_trans: bool = True, ex_summ: bool = True, ex_qna: bool = True, db: Session = Depends(get_db)):
+    info = get_current_user(request.access_token)
     if info["message"] != "Valid":
         return {"type": False, "message": info["message"]}
 
-    history = get_history_by_id(db, history_id)
+    history = get_history_by_id(db, request.history_id)
     is_exported = {
         'transcription': ex_trans,
         'summary': ex_summ,
@@ -370,7 +374,10 @@ async def export_pdf(history_id: int, ex_trans: bool = True, ex_summ: bool = Tru
     pdf_filepath, pdf_filename = text_to_pdf(
         is_exported=is_exported, history=history, db=db)
 
-    return StreamingResponse(open(pdf_filepath, "rb"), headers={"Content-Disposition": f"attachment; filename={pdf_filename}"})
+    return (
+        {"type": True, "message": "export success"}, 
+        StreamingResponse(open(pdf_filepath, "rb"), headers={"Content-Disposition": f"attachment; filename={pdf_filename}"})
+    )
 
 
 if __name__ == "__main__":
