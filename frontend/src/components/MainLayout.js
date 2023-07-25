@@ -47,7 +47,9 @@ const MainLayout = ( { onUpload } ) => {
                               Insert a link or Attach audio files
                             </div>
                             <div>
-                              The audio file length can be up to 60 minutes
+                              mp3, mp4, m4a, wav available <br />
+                              The audio file size can be up to 120 MB
+
                             </div>
 
                           </li>
