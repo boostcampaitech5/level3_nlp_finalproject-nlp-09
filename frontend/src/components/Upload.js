@@ -42,11 +42,27 @@ const Upload = ( { onUpload } ) => {
   }
 
   const handleFileSelect = ( event ) => {
+
     if ( event.target.files[ 0 ] ) {
-      setSelectedFile( event.target.files[ 0 ] )
-      console.log( event.target.files[ 0 ] )
-      setFileName( event.target.files[ 0 ][ 'name' ] )
-      setIsFileUpload( true );
+      const file = event.target.files[ 0 ];
+
+      // Check if a file is selected
+      if ( file ) {
+        // Set the maximum file size limit in bytes (e.g., 5 MB)
+        const maxSizeInBytes = 120 * 1024 * 1024; // 120 MB
+
+        // Check if the file size exceeds the limit
+        if ( file.size > maxSizeInBytes ) {
+          alert( 'File size exceeds the limit (5 MB). Please select a smaller file.' );
+
+        }
+        else {
+          setSelectedFile( event.target.files[ 0 ] )
+          console.log( event.target.files[ 0 ] )
+          setFileName( event.target.files[ 0 ][ 'name' ] )
+          setIsFileUpload( true );
+        }
+      }
     }
   }
   const onClick = () => {
@@ -64,7 +80,7 @@ const Upload = ( { onUpload } ) => {
 
             { isFileUpload ? <span class="flex flex-row justify-center">{ fileName }</span> : null }
             <form onSubmit={ handleSubmit } className='flex flex-row gap-2 itmes-center'>
-              <input style={ { display: "none" } } type="file" accept="audio/*," ref={ realInput } onChange={ handleFileSelect } />
+              <input style={ { display: "none" } } type="file" accept=".mp3, .mp4, .m4a, .wav" ref={ realInput } onChange={ handleFileSelect } />
 
               { isFileUpload ? null : <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded ">Upload File</button> }
               { isFileUpload ? <button type="button" onClick={ onClick } class="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 px-10 rounded" >Reupload</button> : null }
