@@ -60,7 +60,7 @@ function MainContent( { selectedId } ) {
       const link = document.createElement( "a" );
 
       link.href = url;
-      link.download = `LecnRec_(${currentTime}).pdf`;
+      link.download = `LecnRec_${currentTime}.pdf`;
       link.click();
 
       URL.revokeObjectURL( url );
