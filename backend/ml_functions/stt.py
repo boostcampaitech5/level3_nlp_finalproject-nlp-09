@@ -1,15 +1,58 @@
 import os
-from tqdm import tqdm
-import openai, whisper
-from pydub import AudioSegment
-import speech_recognition as sr
-from threading import Thread
-import asyncio
-from functools import partial
-from pprint import pprint
 import sys
 sys.path.append('../')
 from secret import OPENAI_API_KEY_OF_SEHYEONG_IF_SOMEONE_USE_THE_KEY_WITHOUT_PERMISSION_IM_GONNA_KILL_THAT_GUY
+from tqdm import tqdm
+import asyncio
+from pprint import pprint
+
+import openai, whisper
+import speech_recognition as sr
+from pydub import AudioSegment
+
+from threading import Thread
+
+from transformers import PreTrainedTokenizerFast, BartForConditionalGeneration
+
+
+class PunctuationPostprocessing:
+    def __init__(self):
+        self.model_name = "junsun10/kobart-base-v2-add-period"
+        self.model = BartForConditionalGeneration.from_pretrained(self.model_name).to("cuda")
+        self.tokenizer = PreTrainedTokenizerFast.from_pretrained(self.model_name)
+
+    def punctuation_inference(self, text):
+        split_text = [text[i:i+100] for i in range(0, len(text), 100)]
+        result = []
+        print("[KoBART Punctuation PostProcessing]")
+        for text in tqdm(split_text):
+            input_ids = self.tokenizer.encode(text, return_tensors="pt").to("cuda")
+            punctuated_tokens = self.model.generate(
+                input_ids=input_ids,
+                bos_token_id=self.model.config.bos_token_id,
+                eos_token_id=self.model.config.eos_token_id,
+                length_penalty=2.0,
+                max_length=50,
+                num_beams=4,
+            )
+            punctuated_text = self.tokenizer.decode(
+                punctuated_tokens[0], skip_special_tokens=True)
+            result.append([text, punctuated_text])
+        return result
+
+    def remove_wrong_results(self, result):
+        new_result = ""
+        for origin, predict in result:
+            origin_count = origin.count(".")
+            predict_count = predict.count(".")
+            new_predict = predict[:len(origin) + predict_count - origin_count - 1]
+            new_result += new_predict
+        return new_result
+
+    def postprocess(self, text):
+        result = self.punctuation_inference(text)
+        new_result = self.remove_wrong_results(result)
+        return new_result
 
 
 def split_audio_by_time(audio_segment, chunk_duration=3):
@@ -27,7 +70,7 @@ def milliseconds_to_time(milliseconds):
     formatted_time = f"{hours}h {minutes}m {seconds:.2f}s" if hours > 0 else f"{minutes}m {seconds:.2f}s"
     return formatted_time
 
-def whisper_transcribe(audio_path, whisper_version, print_result=False, wav_path=None):
+def whisper_transcribe(audio_path, whisper_version, wav_path=None):
     audio_format = audio_path.split('.')[-1]
     audio_segment = AudioSegment.from_file(audio_path, format=audio_format)
     
@@ -66,7 +109,7 @@ def whisper_transcribe(audio_path, whisper_version, print_result=False, wav_path
 
     return stt_result
 
-def whisper_transcribe_hosted(audio_path, whisper_version='LARGE', print_result=False):   
+def whisper_transcribe_hosted(audio_path, whisper_version='LARGE'):   
     version_mapping = {
         "LARGE": "large-v2",
         "MEDIUM": "medium",
@@ -75,19 +118,15 @@ def whisper_transcribe_hosted(audio_path, whisper_version='LARGE', print_result=
     version = version_mapping[whisper_version.split('_')[-1]]
     model = whisper.load_model(version)
     stt_result = model.transcribe(audio_path)["text"]
-
-    if print_result: print(stt_result)
     
     return stt_result
 
-def whisper_transcribe_api(audio_segment, print_result=False):   
+def whisper_transcribe_api(audio_segment):   
     openai.api_key = OPENAI_API_KEY_OF_SEHYEONG_IF_SOMEONE_USE_THE_KEY_WITHOUT_PERMISSION_IM_GONNA_KILL_THAT_GUY
 
     recognizer = sr.Recognizer()
     audio_data = sr.AudioData(audio_segment.raw_data, audio_segment.frame_rate, audio_segment.sample_width)
     stt_result = recognizer.recognize_whisper_api(audio_data, api_key=OPENAI_API_KEY_OF_SEHYEONG_IF_SOMEONE_USE_THE_KEY_WITHOUT_PERMISSION_IM_GONNA_KILL_THAT_GUY)
-
-    if print_result: print(stt_result)
     
     return stt_result
 
@@ -106,6 +145,8 @@ def transcribe(audio_path):
     """
     whisper_version = "API"
     transcription = whisper_transcribe(audio_path, whisper_version, wav_path=None)
+    postprocessor = PunctuationPostprocessing()
+    transcription = postprocessor.postprocess(transcription)
     return transcription
 
 async def transcribe_async(audio_path):
@@ -118,6 +159,8 @@ async def transcribe_async(audio_path):
     """
     whisper_version = "API"
     transcription = whisper_transcribe(audio_path, whisper_version, wav_path=None)
+    postprocessor = PunctuationPostprocessing()
+    transcription = postprocessor.postprocess(transcription)
     return transcription
 
 async def transcribe_test(audio_path):
