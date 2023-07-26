@@ -32,9 +32,9 @@ function Home() {
           </div>
         </div>
         <div class="py-3 text-xs">
-          <a href="https://openai.com/policies/terms-of-use" target="_blank" class="mx-3 text-gray-500" rel="noreferrer">Terms of use</a>
-          <span class="text-gray-600">|</span>
-          <a href="https://openai.com/policies/privacy-policy" target="_blank" class="mx-3 text-gray-500" rel="noreferrer">Privacy policy</a>
+          <a href="" target="_blank" class="mx-3 text-gray-500" rel="noreferrer"></a>
+          <span class="text-gray-600"></span>
+          <a href="" target="_blank" class="mx-3 text-gray-500" rel="noreferrer"></a>
         </div>
       </div>
       <div class="absolute left-0 right-0 top-0 z-[2]"></div>

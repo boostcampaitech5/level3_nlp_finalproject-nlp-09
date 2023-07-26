@@ -240,11 +240,11 @@ function SignUpPassword() {
         </main>
         <footer className="oai-footer">
           <a href="" target="_blank">
-            Terms of use
+
           </a>{ " " }
-          |{ " " }
+          { " " }
           <a href="" target="_blank">
-            Privacy policy
+
           </a>
         </footer>
       </div>
