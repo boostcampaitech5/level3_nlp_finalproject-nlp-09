@@ -26,7 +26,6 @@ from sqlalchemy.orm import Session
 
 # audio_processing
 from ml_functions.stt import transcribe, transcribe_async, transcribe_test
-from ml_functions.add_period import add_period
 from ml_functions.summary import summarize, summarize_async, summarize_test
 from ml_functions.qna import questionize, questionize_async, questionize_test
 import pytube
@@ -130,9 +129,8 @@ def transcription_task(audio, db, user_id):
     )
     new_history = create_user_history(db, new_history_with_title, user_id)
     transcription = transcribe(temp_audio.name)
-    post_processed_transcription = add_period(transcription)
     new_history = change_history_transcription(
-        db, new_history, post_processed_transcription)
+        db, new_history, transcription)
 
     temp_audio.close()
     os.remove(temp_audio.name)
@@ -147,9 +145,8 @@ def transcription_task_link(audio_name, db, user_id):
     )
     new_history = create_user_history(db, new_history_with_title, user_id)
     transcription = transcribe("./temp/"+audio_name)
-    post_processed_transcription = add_period(transcription)
     new_history = change_history_transcription(
-        db, new_history, post_processed_transcription)
+        db, new_history, transcription)
 
     os.remove("./temp/"+audio_name)
 
