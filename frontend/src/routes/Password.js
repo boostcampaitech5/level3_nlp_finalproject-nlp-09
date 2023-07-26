@@ -234,12 +234,12 @@ function Password() {
           </section>
         </main>
         <footer className="oai-footer">
-          <a href="https://openai.com/policies/terms-of-use" target="_blank">
-            Terms of use
+          <a href="" target="_blank">
+
           </a>{ " " }
-          |{ " " }
-          <a href="https://openai.com/policies/privacy-policy" target="_blank">
-            Privacy policy
+          { " " }
+          <a href="y" target="_blank">
+
           </a>
         </footer>
       </div>
