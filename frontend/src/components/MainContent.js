@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { tokenExpiration } from "../utils/Logout";
 import axios from "axios";
 import cookie from 'react-cookies'
+import { getCurrentTimeFormatted } from "../utils/Time";
 
 
 function MainContent( { selectedId } ) {
@@ -54,12 +55,12 @@ function MainContent( { selectedId } ) {
       console.log( res.data );
 
       const filename = getFilenameFromContentDisposition( res );
-
+      const currentTime = getCurrentTimeFormatted();
       const url = URL.createObjectURL( res.data );
       const link = document.createElement( "a" );
 
       link.href = url;
-      link.download = filename;
+      link.download = `LecnRec_${currentTime}.pdf`;
       link.click();
 
       URL.revokeObjectURL( url );
