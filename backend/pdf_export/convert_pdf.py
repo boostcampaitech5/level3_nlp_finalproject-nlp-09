@@ -41,7 +41,7 @@ def md2pdf(filename, output):
 
 def text_to_pdf(is_exported: Dict, history: History, db: Session = Depends(get_db)):
     current_time = datetime.datetime.now().strftime("%y%m%d%H%M%S")
-    pdf_filename = f"lecnrec_{history.title}_{current_time}.pdf"
+    pdf_filename = f"lecnrec_{current_time}.pdf"
     pdf_temppath = './pdf_tempfiles'
     pdf_filepath = os.path.join(pdf_temppath, pdf_filename)
 
