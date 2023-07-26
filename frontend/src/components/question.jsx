@@ -46,7 +46,7 @@ export function Ques( { historyId } ) {
       answer: updatedQNAList[ index ].answer,
     }
 
-    axios.post( "http://localhost:8000/history/change_qna", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history/change_qna`, body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
       if ( result.type ) { console.log( "Change QNA Success!" ); setQNAList( updatedQNAList ); }
@@ -72,7 +72,7 @@ export function Ques( { historyId } ) {
       access_token: cookie.load( 'user' ).accessToken,
       qna_id: qnaId,
     }
-    axios.post( "http://localhost:8000/history/delete_qna", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history/delete_qna`, body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
       if ( result.type ) {
@@ -106,7 +106,7 @@ export function Ques( { historyId } ) {
       history_id: historyId
     }
     setQNAList( null );
-    axios.post( "http://localhost:8000/history/qna", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history/qna`, body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
       if ( result.type ) { setQNAList( result.qnas ); setUpdatedQNAList( result.qnas ) }
