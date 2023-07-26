@@ -37,7 +37,7 @@ function MainContent( { selectedId } ) {
 
   const getFilenameFromContentDisposition = ( response ) => {
     const contentDisposition = response.headers[ "content-disposition" ];
-    const match = contentDisposition && contentDisposition.match( /filename="(.*?)"/ );
+    const match = contentDisposition && contentDisposition.match( /filename = "(.*?)" / );
     return match && match[ 1 ] ? match[ 1 ] : "file.pdf"; // Default filename if not found
   };
 
@@ -50,13 +50,14 @@ function MainContent( { selectedId } ) {
       ex_qna: qnaChecked,
     }
     console.log( body )
-    axios.post( "http://localhost:8000/history/export_pdf", body, { responseType: 'blob' } ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history/export_pdf`, body, { responseType: 'blob' } ).then( ( res ) => {
       console.log( res.data );
 
       const filename = getFilenameFromContentDisposition( res );
 
       const url = URL.createObjectURL( res.data );
       const link = document.createElement( "a" );
+
       link.href = url;
       link.download = filename;
       link.click();

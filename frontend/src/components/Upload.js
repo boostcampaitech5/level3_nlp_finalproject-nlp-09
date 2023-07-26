@@ -23,7 +23,7 @@ const Upload = ( { onUpload } ) => {
     try {
       const response = await axios( {
         method: "post",
-        url: "http://localhost:8000/upload",
+        url: `http://${process.env.REACT_APP_SERVER_URL}/upload`,
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
       } );

@@ -23,7 +23,7 @@ const History = ( { isActive, id, history, onClickHistory } ) => {
       history_id: historyID,
       title: historyTitle,
     }
-    axios.post( "http://localhost:8000/history/change_title", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history/change_title`, body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
       if ( result.type ) { console.log( "Change Title Success!" ); onClickHistory( historyID ); }
@@ -62,7 +62,7 @@ const History = ( { isActive, id, history, onClickHistory } ) => {
       access_token: accessToken,
       history_id: historyID
     }
-    axios.post( "http://localhost:8000/history/delete", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history/delete`, body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
       if ( result.type ) { console.log( "Delete Success!" ); onClickHistory( null ); }

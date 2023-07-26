@@ -12,6 +12,8 @@ export function Summ( { historyId } ) {
   const [ summaryList, setSummaryList ] = useState( null )
   const [ updatedSummaryList, setUpdatedSummaryList ] = useState( null );
   const [ editing, setEditing ] = useState( false );
+
+  let timerId;
   const navigate = useNavigate();
   const updateParentSize = () => {
     const childDiv = document.getElementById( 'childDiv' );
@@ -33,7 +35,7 @@ export function Summ( { historyId } ) {
       summary: updatedSummaryList.join( '\n' ),
     }
     console.log( "UPDATED", updatedSummaryList )
-    axios.post( "http://localhost:8000/history/change_summary", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history/change_summary`, body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
       if ( result.type ) { console.log( "Change Summary Success!" ); setSummaryList( updatedSummaryList ) }
@@ -70,14 +72,14 @@ export function Summ( { historyId } ) {
       history_id: historyId
     }
     setSummaryList( null );
-    axios.post( "http://localhost:8000/history/summary", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history/summary`, body ).then( ( res ) => {
       console.log( res.data );
       const result = res.data
       if ( result.type ) { setSummaryList( result.summary ); setUpdatedSummaryList( result.summary ) }
       else {
         if ( tokenExpiration( result.message ) ) {
           navigate( '/' )
-        }; console.log( result.message ); setTimeout( fetchData, RETRY_DELAY_MS )
+        }; console.log( result.message ); timerId = setTimeout( fetchData, RETRY_DELAY_MS )
       }
 
     } ).catch( error => {
@@ -85,7 +87,12 @@ export function Summ( { historyId } ) {
       console.error( error );
     } )
   }
-  useEffect( () => { fetchData() }, [ historyId ] )
+  useEffect( () => {
+    fetchData();
+    return () => {
+      clearTimeout( timerId );
+    };
+  }, [ historyId ] )
 
   return (
     <div id="parentDiv" style={ {

@@ -14,7 +14,7 @@ function SignUpId() {
     let body = {
       user_id: id,
     }
-    axios.post( "http://localhost:8000/signup/id_validation", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/id_validation`, body ).then( ( res ) => {
       console.log( res.data )
       const result = res.data
       if ( result.type ) {
