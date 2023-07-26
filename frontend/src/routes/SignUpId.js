@@ -14,7 +14,7 @@ function SignUpId() {
     let body = {
       user_id: id,
     }
-    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/id_validation`, body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/signup/id_validation`, body ).then( ( res ) => {
       console.log( res.data )
       const result = res.data
       if ( result.type ) {
@@ -222,12 +222,12 @@ function SignUpId() {
           </section>
         </main>
         <footer className="oai-footer">
-          <a href="https://openai.com/policies/terms-of-use" target="_blank">
-            Terms of use
+          <a href="" target="_blank">
+
           </a>{ " " }
-          |{ " " }
-          <a href="https://openai.com/policies/privacy-policy" target="_blank">
-            Privacy policy
+          { " " }
+          <a href="" target="_blank">
+
           </a>
         </footer>
       </div>
