@@ -20,7 +20,7 @@ function SignUpPassword() {
       password: password
     }
     console.log( "password", password )
-    axios.post( "http://localhost:8000/signup", body ).then( ( res ) => {
+    axios.post( `http://${process.env.REACT_APP_SERVER_URL}/signup`, body ).then( ( res ) => {
       console.log( res.data )
       const result = res.data
 

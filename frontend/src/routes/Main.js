@@ -35,7 +35,7 @@ function Main() {
 
   useEffect
     ( () => {
-      axios.post( "http://localhost:8000/history", body ).then( ( res ) => {
+      axios.post( `http://${process.env.REACT_APP_SERVER_URL}/history`, body ).then( ( res ) => {
         console.log( res.data )
         const result = res.data
         // setResult( res.data )
