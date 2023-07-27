@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios";
-import logo from "../components/logo2.svg"
+import logo from "../components/LecNRecIcon.png"
 
 function SignUpPassword() {
   const location = useLocation();

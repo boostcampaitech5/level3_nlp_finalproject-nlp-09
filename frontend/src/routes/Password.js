@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom"
 import axios from "axios";
 import cookie from 'react-cookies'
-import logo from "../components/logo2.svg"
+import logo from "../components/LecNRecIcon.png"
 
 function Password() {
   const location = useLocation();

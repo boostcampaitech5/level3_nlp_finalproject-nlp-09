@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-import logo from "../components/logo2.svg"
+import logo from "../components/LecNRecIcon.png"
 
 function Login() {
   const [userName, setUserName] = useState('');
