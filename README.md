@@ -51,7 +51,7 @@ $ ./setting.sh
 **frontend/.env.development 수정**
 
 ```python
-BACKEND_SERVER_ADDRESS=<IP주소:포트번호>
+REACT_APP_BACKEND_SERVER_ADDRESS=<IP주소:포트번호>
 ```
 
 ### Backend setting
