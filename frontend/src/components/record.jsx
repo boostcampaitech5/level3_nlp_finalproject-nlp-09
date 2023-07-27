@@ -29,7 +29,7 @@ export function Rec({ historyId }) {
       history_id: historyId,
       transcription: transcription,
     }
-    axios.post(`http://${process.env.REACT_APP_SERVER_URL}/history/change_transcription`, body).then((res) => {
+    axios.post(`http://${process.env.BACKEND_SERVER_ADDRESS}/history/change_transcription`, body).then((res) => {
       console.log(res.data);
       const result = res.data
       if (result.type) { console.log("Change Transcription Success!"); }
@@ -66,7 +66,7 @@ export function Rec({ historyId }) {
     history_id: historyId
   }
   useEffect(() => {
-    axios.post(`http://${process.env.REACT_APP_SERVER_URL}/history/transcription`, body).then((res) => {
+    axios.post(`http://${process.env.BACKEND_SERVER_ADDRESS}/history/transcription`, body).then((res) => {
       console.log(res.data);
       const result = res.data
       if (result.type) { setTranscription(result.transcription) }
