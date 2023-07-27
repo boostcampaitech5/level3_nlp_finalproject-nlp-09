@@ -106,16 +106,16 @@ function MainContent({ selectedId }) {
                 <label className="flex flex-col gap-2" style={{ fontFamily: "Noto Sans KR", fontWeight: "600", fontSize: "15px", color: "#445060" }}>
                   <input
                     type="checkbox"
-                    checked={summaryChecked}
-                    onChange={handleSummaryChange}
+                    checked={transcriptionChecked}
+                    onChange={handleTranscriptionChange}
                   />
                   속기본
                 </label>
                 <label className="flex flex-col gap-2" style={{ fontFamily: "Noto Sans KR", fontWeight: "600", fontSize: "15px", color: "#445060" }}>
                   <input
                     type="checkbox"
-                    checked={transcriptionChecked}
-                    onChange={handleTranscriptionChange}
+                    checked={summaryChecked}
+                    onChange={handleSummaryChange}
                   />
                   요약본
                 </label>
