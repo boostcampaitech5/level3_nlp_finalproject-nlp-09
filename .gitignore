@@ -157,6 +157,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.env.development
+
 
 # Spyder project settings
 .spyderproject
@@ -236,3 +238,12 @@ sketch
 # End of https://www.toptal.com/developers/gitignore/api/python,linux,visualstudiocode,jupyternotebooks,react
 
 backend/migrations/
+backend/project.db
+backend/alembic.ini
+backend/pdf_tempfiles/*
+frontend/node_modules/*
+frontend/package-lock.json
+*.pdf
+
+# secret key
+secret.py
