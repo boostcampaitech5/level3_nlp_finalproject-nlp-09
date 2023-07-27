@@ -136,14 +136,14 @@ function MainContent({ selectedId }) {
 
       </div>
 
-      <Link to="/main/record" className="item hover:bg-gray-100">
+      <Link to="/main/record" className="item">
         <p style={{ fontFamily: "Noto Sans KR", fontWeight: "700", fontSize: "20px", width: "100%", height: "70px", borderRadius: "5px", paddingTop: "25px", textAlign: "center" }}><em>속기본</em></p></Link>
-      <Link to="/main/summary" className="item hover:bg-gray-100">
+      <Link to="/main/summary" className="item">
         <p style={{ fontFamily: "Noto Sans KR", fontWeight: "700", fontSize: "20px", width: "100%", height: "70px", borderRadius: "5px", paddingTop: "25px", textAlign: "center" }}><em>요약본</em></p></Link>
-      <Link to="/main/question" className="item hover:bg-gray-100" >
+      <Link to="/main/question" className="item" >
         <p style={{ fontFamily: "Noto Sans KR", fontWeight: "700", fontSize: "20px", width: "100%", height: "70px", borderRadius: "5px", paddingTop: "25px", textAlign: "center" }}><em>문제</em></p></Link>
 
-      <div className="item" style={{ backgroundColor: '#394351', color: "black", width: "1300px", height: "700px", borderRadius: "15px", boxShadow: "10px 10px 5px gray", position: "relative", verticalAlign: "center", padding: "30px 0px" }}>
+      <div className="item" style={{ backgroundColor: '#394351', color: "black", width: "95%", height: "100%", borderRadius: "15px", boxShadow: "10px 10px 5px gray", position: "relative", verticalAlign: "center", padding: "30px 0px" }}>
         <Routes>
           <Route path="/" element={<Rec historyId={selectedId} />} />
           <Route path="/record" element={<Rec historyId={selectedId} />} />
