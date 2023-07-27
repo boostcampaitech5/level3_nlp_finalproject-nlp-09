@@ -51,7 +51,7 @@ function MainContent({ selectedId }) {
       ex_qna: qnaChecked,
     }
     console.log(body)
-    axios.post(`http://${process.env.REACT_APP_SERVER_URL}/history/export_pdf`, body, { responseType: 'blob' }).then((res) => {
+    axios.post(`http://${process.env.BACKEND_SERVER_ADDRESS}/history/export_pdf`, body, { responseType: 'blob' }).then((res) => {
       console.log(res.data);
 
       const filename = getFilenameFromContentDisposition(res);

@@ -1,10 +1,10 @@
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
-from secret import SECRET_KEY, ALGORITHM
+from secret import JWT_SECRET_KEY, JWT_ALGORITHM
 
 # JWT 설정
-SECRET_KEY = SECRET_KEY
-ALGORITHM = ALGORITHM
+SECRET_KEY = JWT_SECRET_KEY
+ALGORITHM = JWT_ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
@@ -15,7 +15,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY,
+                             algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -25,7 +26,8 @@ def get_current_user(access_token):
         if not access_token:
             return {"message": "Invalid user"}
 
-        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(access_token, SECRET_KEY,
+                             algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             return {"message": "Invalid user"}

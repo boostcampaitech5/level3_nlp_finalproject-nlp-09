@@ -21,7 +21,7 @@ function SignUpPassword() {
       password: password
     }
     console.log("password", password)
-    axios.post(`http://${process.env.REACT_APP_SERVER_URL}/signup`, body).then((res) => {
+    axios.post(`http://${process.env.BACKEND_SERVER_ADDRESS}/signup`, body).then((res) => {
       console.log(res.data)
       const result = res.data
 

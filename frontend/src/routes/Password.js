@@ -25,7 +25,7 @@ function Password() {
       user_id: userInfo.userName,
       password: password
     }
-    axios.post(`http://${process.env.REACT_APP_SERVER_URL}/token`, body).then((res) => {
+    axios.post(`http://${process.env.BACKEND_SERVER_ADDRESS}/token`, body).then((res) => {
       console.log(res.data)
       const result = res.data
       if (result.type) {

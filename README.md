@@ -51,7 +51,7 @@ $ ./setting.sh
 **frontend/.env.development 수정**
 
 ```python
-REACT_APP_SERVER_URL=<IP주소:포트번호>
+BACKEND_SERVER_ADDRESS=<IP주소:포트번호>
 ```
 
 ### Backend setting
@@ -92,8 +92,8 @@ $ alembic upgrade head
 **backend/secret.py 수정**
 
 ```python
-SECRET_KEY = <임의의 문자열>
-ALGORITHM = <암호화 알고리즘> # ex) HS256, AES128
+JWT_SECRET_KEY = <임의의 문자열>
+JWT_ALGORITHM = <암호화 알고리즘> # ex) HS256, AES128
 OPENAI_API_KEY = <openai api key>
 PORT = <포트번호>
 ```

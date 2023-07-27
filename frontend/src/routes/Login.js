@@ -18,7 +18,7 @@ function Login() {
     let body = {
       user_id: id
     }
-    axios.post(`http://${process.env.REACT_APP_SERVER_URL}/id_validation`, body).then((res) => {
+    axios.post(`http://${process.env.BACKEND_SERVER_ADDRESS}/id_validation`, body).then((res) => {
       console.log(res.data)
       const result = res.data
 
