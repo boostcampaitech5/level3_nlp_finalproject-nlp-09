@@ -35,7 +35,7 @@ function Main() {
 
   useEffect
     (() => {
-      axios.post(`http://${process.env.BACKEND_SERVER_ADDRESS}/history`, body).then((res) => {
+      axios.post(`http://${process.env.REACT_APP_BACKEND_SERVER_ADDRESS}/history`, body).then((res) => {
         console.log(res.data)
         const result = res.data
         // setResult( res.data )

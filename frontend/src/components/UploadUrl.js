@@ -25,7 +25,7 @@ const UploadUrl = ({ onUpload }) => {
     try {
       const response = await axios({
         method: "post",
-        url: `http://${process.env.BACKEND_SERVER_ADDRESS}/upload_link`,
+        url: `http://${process.env.REACT_APP_BACKEND_SERVER_ADDRESS}/upload_link`,
         data: formData,
         headers: { "Content-Type": "multipart/form-data" },
       });
