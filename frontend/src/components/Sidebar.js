@@ -5,38 +5,38 @@ import PropTypes from "prop-types";
 import Logout from "./Logout";
 import History from "./History";
 
-const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => {
-  console.log( "IM historylist", historyList )
-  const [ isButtonHidden, setIsButtonHidden ] = useState( true );
-  const [ isSetting, setIsSetting ] = useState( false );
-  const [ userName, setUserName ] = useState( "" )
-  const [ histories, setHistories ] = useState( null );
+const Sidebar = ({ selectedId, historyList, onClickNote, onClickHistory }) => {
+  console.log("IM historylist", historyList)
+  const [isButtonHidden, setIsButtonHidden] = useState(true);
+  const [isSetting, setIsSetting] = useState(false);
+  const [userName, setUserName] = useState("")
+  const [histories, setHistories] = useState(null);
   const navigate = useNavigate()
   useEffect
-    ( () => {
-      setUserName( cookie.load( 'user' ).userName )
-      setHistories( historyList )
-    }, [ userName, historyList ] )
+    (() => {
+      setUserName(cookie.load('user').userName)
+      setHistories(historyList)
+    }, [userName, historyList])
 
   const onClickSetting = () => {
-    setIsSetting( ( bool ) => !bool )
+    setIsSetting((bool) => !bool)
   }
   const onClickBar = () => {
-    setIsButtonHidden( ( bool ) => !bool )
+    setIsButtonHidden((bool) => !bool)
   }
   const onClickNewNote = () => {
-    navigate( '/main' )
+    navigate('/main')
     onClickNote();
   }
-  const handleClickHistory = ( id ) => {
-    onClickHistory( id );
+  const handleClickHistory = (id) => {
+    onClickHistory(id);
   }
   return (
     <>
-      { isButtonHidden ? null : <button onClick={ onClickBar } style={ { position: "relative", top: "8px", left: "8px" } } aria-label="Show sidebar" className="flex p-3 items-center gap-3 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border bg-white dark:bg-gray-800 border-black/10 dark:border-white/20 hover:bg-gray-50 dark:hover:bg-gray-700 h-11"><svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-black dark:text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg></button> }
+      {isButtonHidden ? null : <button onClick={onClickBar} style={{ position: "relative", top: "8px", left: "8px" }} aria-label="Show sidebar" className="flex p-3 items-center gap-3 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border bg-white dark:bg-gray-800 border-black/10 dark:border-white/20 hover:bg-gray-50 dark:hover:bg-gray-700 h-11"><svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-black dark:text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg></button>}
       < div
         className="dark flex-shrink-0 overflow-x-hidden bg-gray-900"
-        style={ { visibility: isButtonHidden ? "visible" : "hidden", width: isButtonHidden ? 260 : 0, }
+        style={{ visibility: isButtonHidden ? "visible" : "hidden", width: isButtonHidden ? 260 : 0, }
         }
       >
 
@@ -47,13 +47,13 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
               <nav
                 className="flex h-full w-full flex-col p-2"
               >
-                <div className="mb-1 flex flex-row gap-3">
+                <div className="m-1 flex flex-row gap-3">
 
-                  <button onClick={ onClickNewNote } className="flex p-3 items-center gap-3 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border border-white/20 hover:bg-gray-500/10 h-11 flex-shrink-0 flex-grow">
+                  <button onClick={onClickNewNote} className="flex p-3 items-center gap-3 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border border-white/20 hover:bg-gray-500/10 h-11 flex-shrink-0 flex-grow">
                     <svg
                       stroke="currentColor"
                       fill="none"
-                      strokeWidth={ 2 }
+                      strokeWidth={2}
                       viewBox="0 0 24 24"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -62,14 +62,14 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
                       width="1em"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <line x1={ 12 } y1={ 5 } x2={ 12 } y2={ 19 } />
-                      <line x1={ 5 } y1={ 12 } x2={ 19 } y2={ 12 } />
+                      <line x1={12} y1={5} x2={12} y2={19} />
+                      <line x1={5} y1={12} x2={19} y2={12} />
                     </svg>
                     New note
                   </button>
                   <span className="" data-state="closed">
                     <button
-                      onClick={ onClickBar }
+                      onClick={onClickBar}
                       aria-label="Hide sidebar"
                       className=" p-3 gap-2 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md border border-white/20 hover:bg-gray-500/10 h-11 w-180 flex-shrink-0 items-center justify-center"
                     >
@@ -98,24 +98,24 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
                     <div>
                       <span>
                         <div>
-                          <h3 className="h-10 pb-2 pt-3 px-3 text-lg text-gray-400 text-ellipsis overflow-hidden break-all bg-gray-900">
+                          <h3 className="h-10 pb-2 pt-3 px-3 text-lg text-gray-300 text-ellipsis overflow-hidden break-all bg-gray-900 font-bold">
                             History
                           </h3>
                         </div>
                         <div>
-                          { histories ? histories
+                          {histories ? histories
                             .slice()
-                            .sort( ( a, b ) => b.history_id - a.history_id )
-                            .map( ( history ) => (
+                            .sort((a, b) => b.history_id - a.history_id)
+                            .map((history) => (
                               <History
-                                key={ history.history_id }
-                                id={ history.history_id }
-                                history={ history.title }
-                                onClickHistory={ handleClickHistory }
-                                isActive={ selectedId === history.history_id }
+                                key={history.history_id}
+                                id={history.history_id}
+                                history={history.title}
+                                onClickHistory={handleClickHistory}
+                                isActive={selectedId === history.history_id}
                               />
 
-                            ) ) : null }
+                            )) : null}
                         </div>
 
                       </span>
@@ -127,7 +127,7 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
                 <div className="border-t border-white/20 pt-2 empty:hidden">
 
                   <div className="group relative" data-headlessui-state="">
-                    <button onClick={ onClickSetting }
+                    <button onClick={onClickSetting}
                       className="flex w-full relative items-center gap-2.5 rounded-md px-3 py-3 text-sm transition-colors duration-200 hover:bg-gray-800 group-ui-open:bg-gray-800 border-t border-white/20"
                       id="headlessui-menu-button-:r8:"
                       type="button"
@@ -135,11 +135,11 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
                       aria-expanded="false"
                       data-headlessui-state=""
                     >
-                      { isSetting ? <Logout /> : null }
+                      {isSetting ? <Logout /> : null}
                       <div className="flex-shrink-0 ">
                         <div className="relative flex ">
                           <span
-                            style={ {
+                            style={{
                               boxSizing: "border-box",
                               display: "inline-block",
                               overflow: "hidden",
@@ -152,10 +152,10 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
                               padding: 0,
                               position: "relative",
                               maxWidth: "100%"
-                            } }
+                            }}
                           >
                             <span
-                              style={ {
+                              style={{
                                 boxSizing: "border-box",
                                 display: "block",
                                 width: "initial",
@@ -166,13 +166,13 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
                                 margin: 0,
                                 padding: 0,
                                 maxWidth: "100%"
-                              } }
+                              }}
                             >
                               <img
                                 alt=""
                                 aria-hidden="true"
                                 src="data:image/svg+xml,%3csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20version=%271.1%27%20width=%2728%27%20height=%2728%27/%3e"
-                                style={ {
+                                style={{
                                   display: "block",
                                   maxWidth: "100%",
                                   width: "initial",
@@ -182,42 +182,37 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
                                   border: 0,
                                   margin: 0,
                                   padding: 0
-                                } }
+                                }}
                               />
                             </span>
-                            <img
-                              alt="User"
-                              src="https://res.cloudinary.com/di0dhswld/image/upload/v1689404643/Lec___Rec-removebg-preview_8_obihjq.png"
-                              decoding="async"
-                              data-nimg="intrinsic"
-                              className="rounded-sm"
-                              srcSet="https://res.cloudinary.com/di0dhswld/image/upload/v1689404643/Lec___Rec-removebg-preview_8_obihjq.png"
-                              style={ {
-                                position: "absolute",
-                                inset: 0,
-                                boxSizing: "border-box",
-                                padding: 0,
-                                border: "none",
-                                margin: "auto",
-                                display: "block",
-                                width: 0,
-                                height: 0,
-                                minWidth: "100%",
-                                maxWidth: "100%",
-                                minHeight: "100%",
-                                maxHeight: "100%"
-                              } }
-                            />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16" style={{
+                              position: "absolute",
+                              inset: 0,
+                              boxSizing: "border-box",
+                              padding: 0,
+                              border: "none",
+                              margin: "auto",
+                              display: "block",
+                              width: 0,
+                              height: 0,
+                              minWidth: "100%",
+                              maxWidth: "100%",
+                              minHeight: "100%",
+                              maxHeight: "100%",
+                              color: "white"
+                            }}>
+                              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z" />
+                            </svg>
                           </span>
                         </div>
                       </div>
-                      <div className="text-lg grow overflow-hidden text-ellipsis whitespace-nowrap text-left text-white">
-                        { userName }
+                      <div className="text-lg grow overflow-hidden text-ellipsis whitespace-nowrap text-left text-white ml-2">
+                        {userName}
                       </div>
                       <svg
                         stroke="currentColor"
                         fill="none"
-                        strokeWidth={ 2 }
+                        strokeWidth={2}
                         viewBox="0 0 24 24"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -226,9 +221,9 @@ const Sidebar = ( { selectedId, historyList, onClickNote, onClickHistory } ) => 
                         width="1em"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <circle cx={ 12 } cy={ 12 } r={ 1 } />
-                        <circle cx={ 19 } cy={ 12 } r={ 1 } />
-                        <circle cx={ 5 } cy={ 12 } r={ 1 } />
+                        <circle cx={12} cy={12} r={1} />
+                        <circle cx={19} cy={12} r={1} />
+                        <circle cx={5} cy={12} r={1} />
                       </svg>
                     </button>
                   </div>
