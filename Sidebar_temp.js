@@ -52,12 +52,8 @@ const Sidebar = ({ selectedId, historyList, onClickNote, onClickHistory }) => {
                 <div className="text-white h2 m-auto" style={{ fontWeight: "800", paddingTop: "15px", paddingBottom: "15px", fontFamily: "Inter", display: "flex", fontSize: "25px" }}>
                   <img src={logo} style={{ width: "30px", marginRight: "10px" }} />Lec & Rec
                 </div>
-                <div className="mb-1 flex flex-row gap-3">
 
-
-                </div>
-
-                <div className="flex-col flex-1 transition-opacity duration-500 overflow-y-auto">
+                <div className="flex-col flex-1 transition-opacity duration-500 overflow-y-auto" style={{ marginTop: "20px" }}>
                   <div className="flex flex-col gap-2 pb-2 text-gray-100 text-sm">
                     <div>
                       <span>
@@ -65,11 +61,11 @@ const Sidebar = ({ selectedId, historyList, onClickNote, onClickHistory }) => {
                           <h4 className="h4" style={{ color: "#939393", fontFamily: "Inter", fontWeight: "700", paddingLeft: "5px", float: "left" }}>
                             History
                           </h4>
-                          <span className="flex" data-state="closed" style={{}}>
+                          <span className="" data-state="closed" style={{ marginLeft: "120px" }}>
                             <button
                               onClick={onClickBar}
                               aria-label="Hide sidebar"
-                              className=" p-3 gap-2 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md hover:bg-gray-500/10 h-11 w-180 flex-shrink-0 items-center justify-center" style={{ backgroundColor: "#313A46", marginLeft: "auto" }}
+                              className=" p-3 gap-2 transition-colors duration-200 text-white cursor-pointer text-sm rounded-md hover:bg-gray-500/10 h-11 w-180 flex-shrink-0 items-center justify-center" style={{ backgroundColor: "#313A46" }}
                             >
                               <svg
                                 stroke="currentColor"
@@ -114,6 +110,7 @@ const Sidebar = ({ selectedId, historyList, onClickNote, onClickHistory }) => {
 
                         </div>
                         <div style={{ fontFamily: "Inter", fontWeight: "500", fontSize: "15px", marginTop: "12px", borderStyle: "solid", borderWidth: "1px 0px 0px 0px", borderColor: "white", marginLeft: "15px", marginRight: "15px" }}>
+
                           {histories ? histories
                             .slice()
                             .sort((a, b) => b.history_id - a.history_id)
@@ -124,6 +121,7 @@ const Sidebar = ({ selectedId, historyList, onClickNote, onClickHistory }) => {
                                 history={history.title}
                                 onClickHistory={handleClickHistory}
                                 isActive={selectedId === history.history_id}
+
                               />
 
                             )) : null}
@@ -135,7 +133,8 @@ const Sidebar = ({ selectedId, historyList, onClickNote, onClickHistory }) => {
                     </div>
                   </div>
                 </div>
-                <div className="border-t border-white/20 pt-2 empty:hidden">
+
+                <div className="border-t border-white/20 pt-2 empty:hidden" >
 
                   <div className="group relative" data-headlessui-state="" style={{ backgroundColor: "#1B2027", borderRadius: "7px", marginBottom: "10px" }}>
                     <button onClick={onClickSetting}
@@ -210,9 +209,10 @@ const Sidebar = ({ selectedId, historyList, onClickNote, onClickHistory }) => {
                     </button>
                   </div>
                 </div>
+
               </nav>
             </div>
-          </div>
+          </div >
         </div >
       </div >
     </>

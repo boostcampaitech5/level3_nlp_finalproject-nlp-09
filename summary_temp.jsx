@@ -20,7 +20,7 @@ export function Summ({ historyId }) {
     if (childDiv) {
       const childHeight = childDiv.clientHeight;
       const parentDiv = document.getElementById('parentDiv');
-      // parentDiv.style.height = `${0.30 * childHeight}%`;
+      parentDiv.style.height = `${0.30 * childHeight}%`;
     }
   };
 
@@ -95,52 +95,52 @@ export function Summ({ historyId }) {
   }, [historyId])
 
   return (
-    <div id="parentDiv" className="overflow-y-scroll" style={{
-      width: "95%", height: "100%", backgroundColor: 'white', margin: "auto", textAlign: "left", paddingTop: "30px", borderRadius: "10px", boxShadow: "5px 5px 10px", padding: "30px"
+    <div id="parentDiv" style={{
+
     }}>
+      < div id="parentDiv" style={{
+        width: "90%", height: "700px", backgroundColor: 'white', margin: "0 auto", textAlign: "center", paddingTop: "20px", marginTop: "20px", borderRadius: "10px", boxShadow: "5px 5px 10px"
+      }}>
+        <p class="font-extrabold text-summ text-xl"><em></em></p>
+        {summaryList ?
+          <div style={{ height: "650px", fontFamily: "Noto Sans KR", fontWeight: "700", padding: "30px", fontSize: "18px", color: "#2D353F" }} className="overflow-y-scroll">
+            {editing ? <div className="flex right-1 z-10 text-gray-300 visible">
+              <button onClick={handleSave} className="p-1 hover:text-white">
+                <svg
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  height="1em"
+                  width="1em"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </button>
+              <button onClick={handleNoSave} className="p-1 hover:text-white">
+                <svg
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  height="1em"
+                  width="1em"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <line x1={18} y1={6} x2={6} y2={18} />
+                  <line x1={6} y1={6} x2={18} y2={18} />
+                </svg>
+              </button>
+            </div> : <button onClick={handleEdit} style={{ marginLeft: "auto", fontFamily: "Noto Sans KR", fontWeight: "900" }} className="flex transition-colors py-3 px-3 items-center gap-3 relative rounded-md cursor-pointer break-all pr-[4.5rem] )} )} hover:bg-gray-200 group animate-flash"><div >수정</div><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" className="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>}
 
-      <p class="font-extrabold text-summ text-xl"><em></em></p>
-      {summaryList ?
-        <div style={{ height: "100%", ontFamily: "Noto Sans KR", fontWeight: "700", padding: "30px", fontSize: "18px", color: "#2D353F", borderStyle: "none" }} >
-          {editing ? <div className="flex right-1 z-10 text-gray-300 visible" style={{ marginBottom: "30px" }}>
-            <button onClick={handleSave} className="p-1 hover:text-white" style={{ marginRight: "15px" }} >
-              <svg
-                stroke="black"
-                fill="none"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </button>
-            <button onClick={handleNoSave} className="p-1 hover:text-white">
-              <svg
-                stroke="black"
-                fill="none"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-                height="1em"
-                width="1em"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <line x1={18} y1={6} x2={6} y2={18} />
-                <line x1={6} y1={6} x2={18} y2={18} />
-              </svg>
-            </button>
-          </div > : <button onClick={handleEdit} className="flex transition-colors py-3 px-3 items-end gap-3 relative rounded-md cursor-pointer break-all pr-[4.5rem] )} )} hover:bg-gray-200 group animate-flash"><div ></div><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" className="h-4 w-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
-          }
-
-          {
-            editing ? (
+            {editing ? (
               <div>
                 {
                   updatedSummaryList.map((summary, index) =>
@@ -151,18 +151,20 @@ export function Summ({ historyId }) {
                     onChange={(event) => handleChange(event, index)}
                     autoFocus
                     rows="3"
-                    style={{ width: '100%', padding: "20px", textAlign: "justify" }}
+                    style={{ width: '100%' }}
+
+
 
                   />
                   ))}
               </div>) :
-              <div id="childDiv" >
-                <ul className="text-justify" >{summaryList.map((summary) => (<li style={{ margin: "20px" }}>- {summary}<br /><br /></li>))}</ul>
-              </div>
-          }
-        </div > : <Spinner />}
-
+              <div id="childDiv" className="flex flex-col w-full transition-colors py-3 px-3 items-center gap-3 relative rounded-md cursor-pointer break-all pr-[4.5rem] )} )} hover:bg-gray-200 border group animate-flash">
+                <ul className="text-justify">{summaryList.map((summary) => (<li >- {summary}<br /><br /></li>))}</ul>
+              </div>}
+          </div> : <Spinner />}
+      </div >
     </div >
+
   );
 
 }

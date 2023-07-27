@@ -4,30 +4,31 @@ import Col from 'react-bootstrap/Col';
 import { Stack, Button } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import { useNavigate } from "react-router-dom";
-
+import logo from "../components/logo2.svg"
 
 function Home() {
   let navigate = useNavigate();
-  const onClick = ( pathToGo ) => {
+  const onClick = (pathToGo) => {
     let path = pathToGo;
-    navigate( path );
+    navigate(path);
   }
 
   return (
-    <div style={ { alignItems: 'center', justifyContent: 'center', display: 'flex', height: "100vh", background: 'rgb(250, 250, 250)' } }>
+    <div style={{ alignItems: 'center', justifyContent: 'center', display: 'flex', height: "100vh", background: 'rgb(250, 250, 250)' }}>
       <div class="flex h-full w-full flex-col items-center justify-center bg-gray-50 dark:bg-gray-800">
-        <div class="w-96 flex flex-col flex-auto justify-center items-center">
-          <div class="mb-3">
-            <img src="https://res.cloudinary.com/di0dhswld/image/upload/v1689404643/Lec___Rec-removebg-preview_8_obihjq.png" alt="Icon"></img>
+        <div class="w-70 flex flex-col flex-auto justify-center items-center">
+          <div class="mb-3" style={{ width: "400px" }}>
+            <img src={logo} style={{ width: "70px", float: "left", marginTop: "25px", marginRight: "10px" }}></img>
+            <p style={{ fontFamily: "Inter", fontWeight: "900", fontSize: "60px" }}>Lec & Rec</p>
           </div>
-          <div class="mb-2 text-center">Welcome to Lec & Rec</div>
-          <div class="mb-3 text-center">Log in with your account to continue</div>
-          <div class="flex flex-row gap-2">
-            <button onClick={ () => onClick( "/auth/login" ) } class="bg-custom-green hover:bg-green-700 relative text-white py-2.5 px-3 rounded" as="button">
-              <div class="flex w-full gap-2 items-center justify-center text-sm">Log in</div>
+          <div class="mb-2 text-center" style={{ fontFamily: "Inter", fontWeight: "900", fontSize: "22px", color: "#717171" }}>Welcome to Lec & Rec</div>
+          <div class="mb-3 text-center" style={{ fontFamily: "Inter", fontWeight: "900", fontSize: "22px", color: "#717171" }}>Log in with your account to continue</div>
+          <div class="flex flex-row gap-2" style={{ marginTop: "30px" }}>
+            <button onClick={() => onClick("/auth/login")} style={{ fontFamily: "Inter", fontWeight: "700", fontSize: "25px", color: "white", backgroundColor: "#5F5F5F", width: "120px", height: "50px", borderRadius: "10px" }} as="button">
+              <div class="flex w-full gap-2 items-center justify-center text-sm" style={{ fontSize: "16px", }}>Log in</div>
             </button>
-            <button onClick={ () => onClick( "/auth/signup" ) } class="bg-custom-green hover:bg-green-700 relative text-white py-2.5 px-3 rounded" as="button">
-              <div class="flex w-full gap-2 items-center justify-center text-sm">Sign up</div>
+            <button onClick={() => onClick("/auth/signup")} style={{ fontFamily: "Inter", fontWeight: "700", fontSize: "25px", color: "white", backgroundColor: "#5F5F5F", width: "120px", height: "50px", borderRadius: "10px" }} as="button">
+              <div class="flex w-full gap-2 items-center justify-center text-sm" style={{ fontSize: "16px", }}>Sign up</div>
             </button>
           </div>
         </div>
