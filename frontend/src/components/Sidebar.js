@@ -4,7 +4,7 @@ import cookie from 'react-cookies'
 import PropTypes from "prop-types";
 import Logout from "./Logout";
 import History from "./History";
-import logo from './logo.svg';
+import logo from "./LecNRecIcon.png"
 import person from './person.svg'
 
 const Sidebar = ({ selectedId, historyList, onClickNote, onClickHistory }) => {

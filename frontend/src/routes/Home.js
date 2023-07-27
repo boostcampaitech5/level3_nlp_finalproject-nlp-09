@@ -4,7 +4,7 @@ import Col from 'react-bootstrap/Col';
 import { Stack, Button } from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner';
 import { useNavigate } from "react-router-dom";
-import logo from "../components/logo2.svg"
+import logo from "../components/LecNRecIcon.png";
 
 function Home() {
   let navigate = useNavigate();
@@ -18,7 +18,7 @@ function Home() {
       <div class="flex h-full w-full flex-col items-center justify-center bg-gray-50 dark:bg-gray-800">
         <div class="w-70 flex flex-col flex-auto justify-center items-center">
           <div class="mb-3" style={{ width: "400px" }}>
-            <img src={logo} style={{ width: "70px", float: "left", marginTop: "25px", marginRight: "10px" }}></img>
+            <img src={logo} style={{ width: "70px", float: "left", marginTop: "10px" }}></img>
             <p style={{ fontFamily: "Inter", fontWeight: "900", fontSize: "60px" }}>Lec & Rec</p>
           </div>
           <div class="mb-2 text-center" style={{ fontFamily: "Inter", fontWeight: "900", fontSize: "22px", color: "#717171" }}>Welcome to Lec & Rec</div>

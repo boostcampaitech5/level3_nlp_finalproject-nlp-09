@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import logo from "../components/logo2.svg"
+import logo from "../components/LecNRecIcon.png"
 
 function SignUpId() {
   let navigate = useNavigate();
