@@ -83,8 +83,8 @@ export function Rec({ historyId }) {
   }, [historyId])
 
   return (
-    <div className="bg-gray-700" id="parentDiv" style={{
-      color: "black", width: "100%", position: "relative", paddingTop: "10px", paddingBottom: "40px", borderRadius: "15px", boxShadow: "10px 10px 5px gray"
+    <div id="parentDiv" style={{
+      color: "black", width: "100%", position: "relative", paddingTop: "10px", paddingBottom: "40px", borderRadius: "15px", boxShadow: "10px 10px 5px gray", backgroundColor: "rgb(55 65 81)"
     }} >
       <div id="parentDiv" style={{
         width: "90%", backgroundColor: 'white', margin: "0 auto", textAlign: "justify", marginTop: "30px", borderRadius: "10px", boxShadow: "5px 5px 10px gray"

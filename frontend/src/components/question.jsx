@@ -129,8 +129,8 @@ export function Ques({ historyId }) {
     };
   }, [historyId])
   return (
-    <div className="bg-gray-700" id="parentDiv" style={{
-      color: "black", width: "100%", position: "relative", paddingTop: "10px", paddingBottom: "40px", borderRadius: "15px", boxShadow: "10px 10px 5px gray"
+    <div id="parentDiv" style={{
+      color: "black", width: "100%", position: "relative", paddingTop: "10px", paddingBottom: "40px", borderRadius: "15px", boxShadow: "10px 10px 5px gray", backgroundColor: "rgb(55 65 81)"
     }}>
 
       <div id="parentDiv" style={{
@@ -228,7 +228,7 @@ export function Ques({ historyId }) {
                           </svg>
                         </button>
                       </div>
-                      <div className="bg-gray-700" style={{ width: "100%", height: "3px" }} />
+                      <div style={{ width: "100%", height: "3px", backgroundColor: "rgb(55 65 81)" }} />
                     </ol>)}
 
               </div>
