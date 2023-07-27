@@ -36,6 +36,7 @@ from pdf_export.convert_pdf import text_to_pdf
 # login
 from login import get_current_user, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
+import secret
 
 app = FastAPI()
 templates = Jinja2Templates(directory="../src")
@@ -379,4 +380,4 @@ async def export_pdf(request: Body, db: Session = Depends(get_db)):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=secret.PORT, reload=True)
