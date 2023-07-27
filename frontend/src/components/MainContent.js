@@ -126,7 +126,7 @@ function MainContent({ selectedId }) {
                     onChange={handleQnaChange}
 
                   />
-                  문제
+                  퀴즈
                 </label>
                 <div className="flex flex-row gap-1">
                   <button onClick={onClickExport} style={{ fontFamily: "Inter", fontWeight: "600", fontSize: "15px", color: "#445060", borderWidth: "1px", borderColor: "#C6CDD8", borderStyle: "solid", borderRadius: "5px", padding: "0px 10px" }}>Export</button>
@@ -141,7 +141,7 @@ function MainContent({ selectedId }) {
       <Link to="/main/summary" className="item">
         <p style={{ fontFamily: "Noto Sans KR", fontWeight: "700", fontSize: "20px", width: "100%", height: "70px", borderRadius: "5px", paddingTop: "25px", textAlign: "center" }}><em>요약본</em></p></Link>
       <Link to="/main/question" className="item" >
-        <p style={{ fontFamily: "Noto Sans KR", fontWeight: "700", fontSize: "20px", width: "100%", height: "70px", borderRadius: "5px", paddingTop: "25px", textAlign: "center" }}><em>문제</em></p></Link>
+        <p style={{ fontFamily: "Noto Sans KR", fontWeight: "700", fontSize: "20px", width: "100%", height: "70px", borderRadius: "5px", paddingTop: "25px", textAlign: "center" }}><em>퀴즈</em></p></Link>
 
       <div className="item" style={{ backgroundColor: '#394351', color: "black", width: "95%", height: "100%", borderRadius: "15px", boxShadow: "10px 10px 5px gray", position: "relative", verticalAlign: "center", padding: "30px 0px" }}>
         <Routes>

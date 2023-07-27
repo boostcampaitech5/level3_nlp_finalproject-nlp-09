@@ -25,14 +25,15 @@ const MainLayout = ({ onUpload }) => {
                       <div className="flex flex-col mb-8 md:mb-auto gap-3.5 flex-1">
 
                         <ul className="flex flex-col gap-3.5 w-full sm:max-w-md m-auto">
-                          <li className="w-full text-lg bg-gray-50 dark:bg-white/5 p-7 rounded-md">
+                          <li className="w-full text-lg bg-gray-50 dark:bg-white/5 rounded-md pt-7">
                             <div style={{ fontFamily: "Inter", fontWeight: "800", fontSize: "21px", marginBottom: "45px", color: "#56657A" }}>
-                              Insert a link or Attach audio files
+                              강의 유튜브 링크 또는 음성 파일을 넣어주세요<br /><br />
+                              속기, 요약, 퀴즈를 만들어 드릴게요
                             </div>
                             <div style={{ fontFamily: "Inter", fontWeight: "500", fontSize: "17px", color: "#5F7087", marginBottom: "30px" }}>
-                              mp3, mp4, m4a, wav available <br />
-                              The audio file size can be up to 120 MB
-
+                              mp3, mp4, m4a, wav 파일을 지원해요 <br />
+                              음성 파일 크기는 최대 120 MB까지 가능해요<br />
+                              길이는 60분 이내로 해주세요
                             </div>
 
                           </li>
@@ -45,8 +46,8 @@ const MainLayout = ({ onUpload }) => {
 
                 </div>
                 <div className="flex flex-row gap-0 justify-center">
-                  <button onClick={() => { setWhich(true) }} className="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 w-24 rounded-l-lg " style={{ fontFamily: "Inter", fontWeight: "800", fontSize: "18px", width: "200px", height: "50px", borderWidth: "0px 2px 0px 0px", borderStyle: "solid", borderColor: "white" }}>Link</button>
-                  <button onClick={() => { setWhich(false) }} className="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 w-24 rounded-r-lg " style={{ fontFamily: "Inter", fontWeight: "800", fontSize: "18px", width: "200px", height: "50px" }}>File</button>
+                  <button onClick={() => { setWhich(true) }} className="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 w-24 rounded-l-lg " style={{ fontFamily: "Inter", fontWeight: "800", fontSize: "18px", width: "196px", height: "50px", borderWidth: "0px 2px 0px 0px", borderStyle: "solid", borderColor: "white" }}>Link</button>
+                  <button onClick={() => { setWhich(false) }} className="bg-slate-700 hover:bg-slate-800 relative text-white py-2.5 w-24 rounded-r-lg " style={{ fontFamily: "Inter", fontWeight: "800", fontSize: "18px", width: "196px", height: "50px" }}>File</button>
                 </div>
                 <div className="flex flex-col gap-2">
 
