@@ -92,7 +92,7 @@ $ alembic upgrade head
 **backend/secret.py 수정**
 
 ```python
-JWJ_SECRET_KEY = <임의의 문자열>
+JWT_SECRET_KEY = <임의의 문자열>
 JWT_ALGORITHM = <암호화 알고리즘> # ex) HS256, AES128
 OPENAI_API_KEY = <openai api key>
 PORT = <포트번호>
